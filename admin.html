@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Brayan Streams</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0a0a0a;--coal:#141414;--panel:#181818;
+    --red:#c0202a;--red-dim:#7a1218;
+    --orange:#e05a1a;--orange-l:#f07a3a;
+    --green:#22c55e;--green-dim:#15803d;
+    --ash:#2a2a2a;--ash2:#222;--muted:#555;
+    --text:#e8e2d8;--text-dim:#888;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+
+  /* LOGIN */
+  #login-screen{position:fixed;inset:0;background:var(--black);display:flex;align-items:center;justify-content:center;z-index:999}
+  .login-box{background:var(--coal);border:1px solid var(--ash);border-top:3px solid var(--red);border-radius:6px;padding:36px 32px;width:100%;max-width:360px}
+  .login-box h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .login-box p{font-size:.8rem;color:var(--text-dim);margin-bottom:24px}
+  .login-box input{width:100%;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.9rem;padding:10px 14px;outline:none;margin-bottom:12px;font-family:'Inter',sans-serif}
+  .login-box input:focus{border-color:var(--orange)}
+  .login-box button{width:100%;background:var(--red);border:none;color:#fff;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:11px;border-radius:4px;cursor:pointer}
+  .login-box button:hover{background:#a01820}
+  .login-error{color:var(--red);font-size:.78rem;margin-top:8px;display:none}
+
+  /* LAYOUT */
+  #app{display:none}
+  header{background:var(--coal);border-bottom:2px solid var(--red);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+  .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.4rem;text-transform:uppercase}
+  .logo .b{color:var(--red)}.logo .s{color:var(--orange)}
+  .admin-badge{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);background:#1a0a00;border:1px solid var(--orange);padding:4px 10px;border-radius:3px}
+  .btn-logout{background:none;border:1px solid var(--ash);color:var(--text-dim);font-size:.75rem;padding:5px 12px;border-radius:3px;cursor:pointer}
+  .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+  main{padding:20px;max-width:1400px;margin:0 auto}
+
+  /* STAT CARDS */
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+  .stat{background:var(--panel);border:1px solid var(--ash);border-radius:5px;padding:14px 16px}
+  .stat-label{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
+  .stat-value{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
+  .stat-value.green{color:var(--green)}
+  .stat-value.orange{color:var(--orange-l)}
+  .stat-value.red{color:var(--red)}
+
+  /* STREAM CARDS */
+  .section-label{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
+  .stream-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:16px;margin-bottom:28px}
+  .stream-card{background:var(--panel);border:1px solid var(--ash);border-radius:6px;overflow:hidden}
+  .sc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--ash);background:#111}
+  .sc-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em}
+  .sc-title span{color:var(--orange-l);margin-right:5px}
+  .sc-status{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:3px}
+  .sc-status.live{background:#0f2a0f;color:var(--green);border:1px solid var(--green-dim)}
+  .sc-status.offline{background:#1a0a0a;color:var(--red);border:1px solid var(--red-dim)}
+  .sc-body{padding:14px}
+  .sc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1e1e1e}
+  .sc-row:last-child{border-bottom:none}
+  .sc-key{font-size:.75rem;color:var(--text-dim)}
+  .sc-val{font-size:.82rem;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text)}
+  .sc-val.green{color:var(--green)}
+  .sc-val.orange{color:var(--orange-l)}
+
+  /* VIEWERS CHART */
+  .chart-wrap{background:var(--panel);border:1px solid var(--ash);border-radius:6px;padding:16px;margin-bottom:28px}
+  .chart-title{font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
+  canvas#viewerChart{width:100%!important;height:140px!important}
+
+  /* LOG */
+  .log-box{background:#0d0d0d;border:1px solid var(--ash);border-radius:5px;padding:12px 14px;font-family:monospace;font-size:.75rem;color:var(--text-dim);height:130px;overflow-y:auto;line-height:1.8}
+  .log-entry{margin:0}.log-entry .ts{color:var(--muted)}.log-entry .ok{color:var(--green)}.log-entry .err{color:var(--red)}.log-entry .warn{color:var(--orange-l)}
+
+  @media(max-width:600px){main{padding:12px}.stat-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2><span style="color:var(--red)">Brayan</span> <span style="color:var(--orange)">Streams</span></h2>
+    <p>Panel de administración — acceso restringido</p>
+    <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="logo"><span class="b">Brayan</span> <span class="s">Streams</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="admin-badge">Admin</div>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- STATS GLOBALES -->
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-label">Streams activos</div>
+        <div class="stat-value green" id="g-active">0 / 4</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Espectadores totales</div>
+        <div class="stat-value orange" id="g-viewers">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Bitrate total</div>
+        <div class="stat-value" id="g-bitrate">— kbps</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Última actualización</div>
+        <div class="stat-value" id="g-time" style="font-size:1rem">—</div>
+      </div>
+    </div>
+
+    <!-- STREAMS -->
+    <div class="section-label">Estado de canchas</div>
+    <div class="stream-grid" id="stream-grid"></div>
+
+    <!-- GRÁFICA ESPECTADORES -->
+    <div class="chart-wrap">
+      <div class="chart-title">Espectadores por cancha (últimos 10 min)</div>
+      <canvas id="viewerChart"></canvas>
+    </div>
+
+    <!-- LOG -->
+    <div class="section-label">Log de eventos</div>
+    <div class="log-box" id="log-box"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ── AUTH ─────────────────────────────────────────────────────
+const PASS = 'brayan23@';
+const TOKEN = 'REEMPLAZAR_CON_TOKEN';
+const SERVER_IP = window.location.hostname !== 'localhost' ? window.location.origin : 'http://TU_IP';
+const STATS_URL = `${SERVER_IP}/stats`;
+
+function doLogin() {
+  const v = document.getElementById('pwd-input').value;
+  if (v === PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 2500);
+  }
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  clearInterval(refreshInterval);
+}
+
+// ── DATOS ─────────────────────────────────────────────────────
+const canchas = ['cancha1','cancha2','cancha3','cancha4'];
+const labels  = ['Cancha 1','Cancha 2','Cancha 3','Cancha 4'];
+let viewerHistory = { cancha1:[], cancha2:[], cancha3:[], cancha4:[] };
+let timeLabels = [];
+let chart;
+let refreshInterval;
+
+// ── PARSEAR XML DE NGINX-RTMP ─────────────────────────────────
+function parseStats(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, 'text/xml');
+  const result = {};
+
+  canchas.forEach(key => {
+    result[key] = { live: false, viewers: 0, bitrate: 0, fps: 0, codec: '—', uptime: '—' };
+  });
+
+  const streams = xml.querySelectorAll('stream');
+  streams.forEach(s => {
+    const name = s.querySelector('name')?.textContent?.trim();
+    if (!name || !result[name]) return;
+    const clients = parseInt(s.querySelector('nclients')?.textContent || '0');
+    const bw = parseInt(s.querySelector('bw_video')?.textContent || '0');
+    const codec = s.querySelector('meta video codec')?.textContent || '—';
+    const fps = s.querySelector('meta video frame_rate')?.textContent || '0';
+    const time = parseInt(s.querySelector('time')?.textContent || '0');
+    const mins = Math.floor(time / 1000 / 60);
+    const secs = Math.floor((time / 1000) % 60);
+
+    result[name] = {
+      live: clients > 0 || bw > 0,
+      viewers: Math.max(0, clients - 1),
+      bitrate: Math.round(bw / 1000),
+      fps: Math.round(parseFloat(fps)),
+      codec: codec || '—',
+      uptime: time > 0 ? `${mins}m ${secs}s` : '—',
+    };
+  });
+
+  return result;
+}
+
+// ── ACTUALIZAR UI ─────────────────────────────────────────────
+function updateUI(data) {
+  let active = 0, totalViewers = 0, totalBitrate = 0;
+  const grid = document.getElementById('stream-grid');
+
+  canchas.forEach((key, i) => {
+    const d = data[key];
+    if (d.live) { active++; totalViewers += d.viewers; totalBitrate += d.bitrate; }
+
+    let card = document.getElementById(`sc-${key}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'stream-card';
+      card.id = `sc-${key}`;
+      grid.appendChild(card);
+    }
+
+    card.innerHTML = `
+      <div class="sc-header">
+        <div class="sc-title"><span>#${i+1}</span>${labels[i]}</div>
+        <div class="sc-status ${d.live ? 'live' : 'offline'}">${d.live ? 'En vivo' : 'Offline'}</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-row"><span class="sc-key">Espectadores</span><span class="sc-val ${d.live?'orange':''}">${d.live ? d.viewers : '—'}</span></div>
+        <div class="sc-row"><span class="sc-key">Bitrate video</span><span class="sc-val ${d.live?'green':''}">${d.live ? d.bitrate+' kbps' : '—'}</span></div>
+        <div class="sc-row"><span class="sc-key">Fotogramas/s</span><span class="sc-val">${d.live ? d.fps+' fps' : '—'}</span></div>
+        <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val">${d.codec}</span></div>
+        <div class="sc-row"><span class="sc-key">Tiempo activo</span><span class="sc-val">${d.uptime}</span></div>
+      </div>
+    `;
+
+    viewerHistory[key].push(d.viewers);
+    if (viewerHistory[key].length > 10) viewerHistory[key].shift();
+  });
+
+  document.getElementById('g-active').textContent = `${active} / 4`;
+  document.getElementById('g-viewers').textContent = active > 0 ? totalViewers : '—';
+  document.getElementById('g-bitrate').textContent = totalBitrate > 0 ? totalBitrate + ' kbps' : '—';
+  document.getElementById('g-time').textContent = new Date().toLocaleTimeString('es-CO');
+
+  const now = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  timeLabels.push(now);
+  if (timeLabels.length > 10) timeLabels.shift();
+  updateChart();
+}
+
+// ── CHART ─────────────────────────────────────────────────────
+const COLORS = ['#c0202a','#e05a1a','#f07a3a','#22c55e'];
+
+function buildChart() {
+  const ctx = document.getElementById('viewerChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: timeLabels,
+      datasets: canchas.map((key, i) => ({
+        label: labels[i],
+        data: viewerHistory[key],
+        borderColor: COLORS[i],
+        backgroundColor: COLORS[i] + '22',
+        borderWidth: 1.5,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.3,
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: { legend: { labels: { color: '#888', font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 10 }, maxTicksLimit: 5 }, grid: { color: '#1e1e1e' } },
+        y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#1e1e1e' }, min: 0 }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!chart) return;
+  chart.data.labels = [...timeLabels];
+  canchas.forEach((key, i) => { chart.data.datasets[i].data = [...viewerHistory[key]]; });
+  chart.update('none');
+}
+
+// ── LOG ───────────────────────────────────────────────────────
+function log(msg, type = 'ok') {
+  const box = document.getElementById('log-box');
+  const ts = new Date().toLocaleTimeString('es-CO');
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="ts">[${ts}]</span> <span class="${type}">${msg}</span>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  if (box.children.length > 50) box.removeChild(box.firstChild);
+}
+
+// ── FETCH STATS ───────────────────────────────────────────────
+async function fetchStats() {
+  try {
+    const res = await fetch(STATS_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const data = parseStats(text);
+    updateUI(data);
+    log('Stats actualizadas correctamente', 'ok');
+  } catch (e) {
+    log(`Error al obtener stats: ${e.message}`, 'err');
+    // Datos de demo si el servidor no está listo
+    const demo = {};
+    canchas.forEach(k => {
+      demo[k] = { live: false, viewers: 0, bitrate: 0, fps: 0, codec: '—', uptime: '—' };
+    });
+    updateUI(demo);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+function init() {
+  buildChart();
+  fetchStats();
+  log('Panel de administración iniciado', 'ok');
+  log(`Conectando a ${STATS_URL}`, 'warn');
+  refreshInterval = setInterval(fetchStats, 5000);
+}
+
+document.getElementById('pwd-input').focus();
+</script>
+</body>
+</html>
