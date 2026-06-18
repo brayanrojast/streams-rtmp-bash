@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-# ============================================================
-#  BRAYAN STREAMS — Script de instalación completo
-#  Uso: bash setup-brayanstreams.sh
-# ============================================================
-
 echo ""
 echo "██████╗ ██████╗  █████╗ ██╗   ██╗ █████╗ ███╗   ██╗"
 echo "██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝██╔══██╗████╗  ██║"
@@ -13,17 +8,22 @@ echo "██████╔╝██████╔╝███████║ �
 echo "██╔══██╗██╔══██╗██╔══██║  ╚██╔╝  ██╔══██║██║╚██╗██║"
 echo "██████╔╝██║  ██║██║  ██║   ██║   ██║  ██║██║ ╚████║"
 echo "╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝"
-echo "              STREAMS — Setup v1.0"
+echo "              STREAMS — Setup v1.1"
 echo ""
 
-# ── Pedir IP del servidor ─────────────────────────────────
-read -p "  Ingresa la IP de este servidor: " SERVER_IP
+# ── Detectar IP pública automáticamente ──────────────────────
+echo "  Detectando IP pública del servidor..."
+SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org || \
+            curl -s --max-time 5 https://ifconfig.me || \
+            curl -s --max-time 5 https://icanhazip.com || \
+            hostname -I | awk '{print $1}')
+
 if [ -z "$SERVER_IP" ]; then
-    echo "❌ IP no puede estar vacía."
+    echo "❌ No se pudo detectar la IP. Verifica la conexión a internet."
     exit 1
 fi
-echo ""
-echo "  ✅ IP configurada: $SERVER_IP"
+
+echo "  ✅ IP detectada: $SERVER_IP"
 echo ""
 
 # ============================================================
@@ -50,7 +50,7 @@ ClientAliveCountMax 3
 PermitRootLogin yes
 PasswordAuthentication yes
 EOF
-systemctl restart ssh
+systemctl restart ssh || service ssh restart
 
 # ============================================================
 # 4. CONFIGURAR FIREWALL
@@ -168,7 +168,7 @@ http {
 
         location /stats {
             rtmp_stat all;
-            rtmp_stat_stylesheet /stat.xsl;
+            rtmp_stat_stylesheet stat.xsl;
         }
     }
 
@@ -182,9 +182,22 @@ http {
 NGINXCONF
 
 # ============================================================
-# 7. COPIAR STAT.XSL
+# 7. DESCARGAR PÁGINAS WEB DESDE GITHUB
 # ============================================================
-echo "=== [7/9] Copiando recursos de stats ==="
+echo "=== [7/9] Descargando páginas web ==="
+
+curl -fsSL "https://raw.githubusercontent.com/brayanrojast/streams-rtmp-bash/refs/heads/main/index.html" \
+     -o /var/www/brayanstreams/index.html
+
+curl -fsSL "https://raw.githubusercontent.com/brayanrojast/streams-rtmp-bash/refs/heads/main/admin.html" \
+     -o /var/www/brayanstreams/admin.html
+
+# Inyectar IP y token en las páginas automáticamente
+sed -i "s|REEMPLAZAR_CON_TOKEN|$SECRET_TOKEN|g" /var/www/brayanstreams/index.html
+sed -i "s|REEMPLAZAR_CON_TOKEN|$SECRET_TOKEN|g" /var/www/brayanstreams/admin.html
+sed -i "s|http://TU_IP|http://$SERVER_IP|g" /var/www/brayanstreams/index.html
+sed -i "s|http://TU_IP|http://$SERVER_IP|g" /var/www/brayanstreams/admin.html
+
 cp /usr/share/doc/libnginx-mod-rtmp/examples/stat.xsl /var/www/brayanstreams/ 2>/dev/null || true
 
 # ============================================================
@@ -194,7 +207,6 @@ echo "=== [8/9] Creando comandos de gestión ==="
 
 cat << 'PROXYSH' > /usr/local/bin/bs-proxy
 #!/bin/bash
-# Uso: bs-proxy <cancha> <url_m3u8>
 CANCHA=$1
 URL=$2
 if [ -z "$CANCHA" ] || [ -z "$URL" ]; then
@@ -209,7 +221,6 @@ PROXYSH
 
 cat << 'STOPSH' > /usr/local/bin/bs-stop
 #!/bin/bash
-# Uso: bs-stop <cancha>
 CANCHA=$1
 if [ -f /tmp/bs-$CANCHA.pid ]; then
     kill $(cat /tmp/bs-$CANCHA.pid) 2>/dev/null
@@ -240,19 +251,23 @@ echo "=============================================="
 echo "  ✅ BRAYAN STREAMS — INSTALACIÓN COMPLETA"
 echo "=============================================="
 echo ""
-echo "  🌐 Página web:   http://$SERVER_IP"
-echo "  📡 RTMP (OBS):   rtmp://$SERVER_IP/live/cancha1"
-echo "  🎥 HLS cancha1:  http://$SERVER_IP/stream/cancha1/index.m3u8?token=$TOKEN_SECRET"
-echo "  🎥 HLS cancha2:  http://$SERVER_IP/stream/cancha2/index.m3u8?token=$TOKEN_SECRET"
-echo "  🎥 HLS cancha3:  http://$SERVER_IP/stream/cancha3/index.m3u8?token=$TOKEN_SECRET"
-echo "  🎥 HLS cancha4:  http://$SERVER_IP/stream/cancha4/index.m3u8?token=$TOKEN_SECRET"
-echo "  📊 Stats:        http://$SERVER_IP/stats"
+echo "  🌐 Página web:    http://$SERVER_IP"
+echo "  🔐 Admin:         http://$SERVER_IP/admin.html"
+echo "  📡 RTMP (OBS):    rtmp://$SERVER_IP/live/cancha1"
 echo ""
-echo "  🔑 TOKEN SECRETO (guárdalo, no lo compartas):"
+echo "  🎥 HLS streams:"
+echo "     http://$SERVER_IP/stream/cancha1/index.m3u8?token=$TOKEN_SECRET"
+echo "     http://$SERVER_IP/stream/cancha2/index.m3u8?token=$TOKEN_SECRET"
+echo "     http://$SERVER_IP/stream/cancha3/index.m3u8?token=$TOKEN_SECRET"
+echo "     http://$SERVER_IP/stream/cancha4/index.m3u8?token=$TOKEN_SECRET"
+echo ""
+echo "  📊 Stats:         http://$SERVER_IP/stats"
+echo ""
+echo "  🔑 TOKEN SECRETO:"
 echo "  $TOKEN_SECRET"
 echo ""
-echo "  COMANDOS:"
-echo "  bs-proxy cancha1 https://url-externa.m3u8   ← M3U8 externo"
+echo "  COMANDOS ÚTILES:"
+echo "  bs-proxy cancha1 https://url-m3u8-externa   ← conectar M3U8 externo"
 echo "  bs-stop  cancha1                             ← detener stream"
 echo ""
 echo "  OBS → Settings → Stream:"
