@@ -588,10 +588,30 @@ async function fetchStats() {
 }
 
 // ── INIT ──────────────────────────────────────────────────
+async function syncProxyStatus() {
+  try {
+    const res = await fetch('/api/stream/status');
+    if (!res.ok) return;
+    const data = await res.json();
+    state.canchas.forEach(c => {
+      const d = data[`cancha${c.id}`];
+      if (d && d.running) {
+        c.pid = d.pid;
+        // Si tenía un tipo manual configurado se respeta; si no, asumimos m3u8
+        if (c.inputType === 'rtmp') c.inputType = 'm3u8';
+      }
+    });
+    renderCards();
+  } catch {
+    // Sin bs-api disponible — el panel sigue funcionando con bs-proxy manual
+  }
+}
+
 function init() {
   renderCards();
   buildChart();
   fetchStats();
+  syncProxyStatus();
   log('Panel iniciado', 'ok');
   refreshInterval = setInterval(fetchStats, 5000);
 }

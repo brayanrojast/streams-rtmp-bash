@@ -1,0 +1,16 @@
+[Unit]
+Description=bs-api - backend para botones Iniciar/Detener del panel admin Radio Patio TV
+After=network.target nginx.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/bs-api/server.js
+Restart=on-failure
+RestartSec=3
+User=root
+WorkingDirectory=/opt/bs-api
+StandardOutput=append:/var/log/bs-api.log
+StandardError=append:/var/log/bs-api.log
+
+[Install]
+WantedBy=multi-user.target
