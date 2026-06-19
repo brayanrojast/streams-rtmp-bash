@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Brayan Streams</title>
+<title>Admin — Radio Patio TV</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <style>
   :root{
     --black:#0a0a0a;--coal:#141414;--panel:#181818;
     --red:#c0202a;--red-dim:#7a1218;
-    --orange:#e05a1a;--orange-l:#f07a3a;
-    --green:#22c55e;--green-dim:#15803d;
-    --ash:#2a2a2a;--ash2:#222;--muted:#555;
+    --lime:#84cc16;--lime-l:#a3e635;
+    --green:#22c55e;--green-dim:#166534;
+    --ash:#2a2a2a;--ash2:#1e1e1e;--muted:#555;
     --text:#e8e2d8;--text-dim:#888;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -19,64 +20,104 @@
 
   /* LOGIN */
   #login-screen{position:fixed;inset:0;background:var(--black);display:flex;align-items:center;justify-content:center;z-index:999}
-  .login-box{background:var(--coal);border:1px solid var(--ash);border-top:3px solid var(--red);border-radius:6px;padding:36px 32px;width:100%;max-width:360px}
+  .login-box{background:var(--coal);border:1px solid var(--ash);border-top:3px solid var(--green);border-radius:6px;padding:36px 32px;width:100%;max-width:360px}
   .login-box h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .login-box .slogan{font-size:.74rem;color:var(--lime-l);margin-bottom:18px}
   .login-box p{font-size:.8rem;color:var(--text-dim);margin-bottom:24px}
-  .login-box input{width:100%;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.9rem;padding:10px 14px;outline:none;margin-bottom:12px;font-family:'Inter',sans-serif}
-  .login-box input:focus{border-color:var(--orange)}
-  .login-box button{width:100%;background:var(--red);border:none;color:#fff;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:11px;border-radius:4px;cursor:pointer}
-  .login-box button:hover{background:#a01820}
+  .field{margin-bottom:12px}
+  .field input{width:100%;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.9rem;padding:10px 14px;outline:none;font-family:'Inter',sans-serif}
+  .field input:focus{border-color:var(--lime)}
+  .login-box button{width:100%;background:var(--green);border:none;color:#fff;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:11px;border-radius:4px;cursor:pointer;margin-top:4px}
+  .login-box button:hover{background:#15893f}
   .login-error{color:var(--red);font-size:.78rem;margin-top:8px;display:none}
 
   /* LAYOUT */
   #app{display:none}
-  header{background:var(--coal);border-bottom:2px solid var(--red);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+  header{background:var(--coal);border-bottom:2px solid var(--green);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
   .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.4rem;text-transform:uppercase}
-  .logo .b{color:var(--red)}.logo .s{color:var(--orange)}
-  .admin-badge{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);background:#1a0a00;border:1px solid var(--orange);padding:4px 10px;border-radius:3px}
-  .btn-logout{background:none;border:1px solid var(--ash);color:var(--text-dim);font-size:.75rem;padding:5px 12px;border-radius:3px;cursor:pointer}
-  .btn-logout:hover{border-color:var(--red);color:var(--red)}
+  .logo .b{color:var(--green)}.logo .s{color:var(--lime-l)}
+  .header-right{display:flex;align-items:center;gap:10px}
+  .admin-badge{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lime-l);background:#0a1400;border:1px solid var(--lime);padding:4px 10px;border-radius:3px}
+  .btn-sm{background:none;border:1px solid var(--ash);color:var(--text-dim);font-size:.75rem;padding:5px 12px;border-radius:3px;cursor:pointer;font-family:'Inter',sans-serif}
+  .btn-sm:hover{border-color:var(--green);color:var(--green)}
 
-  main{padding:20px;max-width:1400px;margin:0 auto}
+  main{padding:20px;max-width:1500px;margin:0 auto}
 
   /* STAT CARDS */
-  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
-  .stat{background:var(--panel);border:1px solid var(--ash);border-radius:5px;padding:14px 16px}
-  .stat-label{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
-  .stat-value{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
-  .stat-value.green{color:var(--green)}
-  .stat-value.orange{color:var(--orange-l)}
-  .stat-value.red{color:var(--red)}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+  .stat{background:var(--panel);border:1px solid var(--ash);border-radius:5px;padding:13px 15px}
+  .stat-label{font-size:.67rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
+  .stat-value{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat-value.green{color:var(--green)}.stat-value.orange{color:var(--lime-l)}.stat-value.red{color:var(--red)}
+
+  /* SECTION */
+  .section-label{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--lime-l);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
 
   /* STREAM CARDS */
-  .section-label{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-  .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
-  .stream-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:16px;margin-bottom:28px}
+  .stream-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:16px;margin-bottom:26px}
   .stream-card{background:var(--panel);border:1px solid var(--ash);border-radius:6px;overflow:hidden}
-  .sc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--ash);background:#111}
-  .sc-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em}
-  .sc-title span{color:var(--orange-l);margin-right:5px}
-  .sc-status{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:3px}
-  .sc-status.live{background:#0f2a0f;color:var(--green);border:1px solid var(--green-dim)}
+  .sc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--ash);background:#111;gap:8px;flex-wrap:wrap}
+  .sc-title-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  .sc-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.1rem;color:var(--lime-l);min-width:20px}
+  .sc-name-input{background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em;outline:none;width:140px;padding:2px 4px;cursor:pointer}
+  .sc-name-input:hover{border-bottom-color:var(--ash)}
+  .sc-name-input:focus{border-bottom-color:var(--lime);cursor:text}
+  .sc-status{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap}
+  .sc-status.live{background:#0a1f0a;color:var(--green);border:1px solid var(--green-dim)}
   .sc-status.offline{background:#1a0a0a;color:var(--red);border:1px solid var(--red-dim)}
-  .sc-body{padding:14px}
-  .sc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1e1e1e}
-  .sc-row:last-child{border-bottom:none}
-  .sc-key{font-size:.75rem;color:var(--text-dim)}
-  .sc-val{font-size:.82rem;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text)}
-  .sc-val.green{color:var(--green)}
-  .sc-val.orange{color:var(--orange-l)}
 
-  /* VIEWERS CHART */
-  .chart-wrap{background:var(--panel);border:1px solid var(--ash);border-radius:6px;padding:16px;margin-bottom:28px}
-  .chart-title{font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
-  canvas#viewerChart{width:100%!important;height:140px!important}
+  /* PREVIEW */
+  .sc-preview{position:relative;aspect-ratio:16/9;background:#050505;cursor:pointer}
+  .sc-preview video{width:100%;height:100%;object-fit:contain;display:none}
+  .preview-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#080808}
+  .preview-overlay .play-btn{width:40px;height:40px;border:1.5px solid var(--ash);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:border-color .2s,color .2s}
+  .sc-preview:hover .play-btn{border-color:var(--lime-l);color:var(--lime-l)}
+  .preview-overlay p{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .preview-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#080808}
+  .spinner{width:24px;height:24px;border:2px solid var(--ash);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* QUALITY BADGE */
+  .quality-row{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--ash2);flex-wrap:wrap}
+  .q-badge{font-size:.68rem;font-weight:600;padding:3px 8px;border-radius:3px;border:1px solid var(--ash);color:var(--text-dim);cursor:default}
+  .q-badge.active{border-color:var(--green-dim);color:var(--green);background:#0a1f0a}
+  .q-label{font-size:.68rem;color:var(--muted);align-self:center}
+
+  /* BODY */
+  .sc-body{padding:12px 14px}
+  .sc-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1a1a1a}
+  .sc-row:last-child{border-bottom:none}
+  .sc-key{font-size:.74rem;color:var(--text-dim)}
+  .sc-val{font-size:.8rem;font-weight:500;font-variant-numeric:tabular-nums}
+  .sc-val.green{color:var(--green)}.sc-val.orange{color:var(--lime-l)}
+
+  /* INPUT CONFIG */
+  .sc-input-section{border-top:1px solid var(--ash);padding:12px 14px;background:var(--ash2)}
+  .input-row{display:flex;gap:6px;margin-bottom:8px}
+  .input-row input{flex:1;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.78rem;padding:7px 10px;outline:none;font-family:'Inter',sans-serif}
+  .input-row input:focus{border-color:var(--lime)}
+  .input-row input::placeholder{color:var(--muted)}
+  .btn-action{border:none;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:7px 12px;border-radius:4px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+  .btn-start{background:var(--green-dim);color:#fff}.btn-start:hover{background:#15803d}
+  .btn-stop{background:var(--red-dim);color:#fff}.btn-stop:hover{background:var(--red)}
+  .btn-preview{background:var(--ash);color:var(--text-dim)}.btn-preview:hover{background:#333;color:var(--text)}
+  .input-type-row{display:flex;gap:6px;margin-bottom:8px}
+  .type-btn{flex:1;background:#0e0e0e;border:1px solid var(--ash);color:var(--text-dim);font-size:.72rem;font-weight:600;padding:6px;border-radius:4px;cursor:pointer;text-align:center;font-family:'Inter',sans-serif}
+  .type-btn.active{border-color:var(--lime);color:var(--lime-l);background:#0a1400}
+  .stream-status-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+  .stream-pid{font-size:.7rem;color:var(--muted);font-family:monospace}
+
+  /* CHART */
+  .chart-wrap{background:var(--panel);border:1px solid var(--ash);border-radius:6px;padding:16px;margin-bottom:24px}
+  .chart-title{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px}
+  canvas#viewerChart{width:100%!important;height:130px!important}
 
   /* LOG */
-  .log-box{background:#0d0d0d;border:1px solid var(--ash);border-radius:5px;padding:12px 14px;font-family:monospace;font-size:.75rem;color:var(--text-dim);height:130px;overflow-y:auto;line-height:1.8}
-  .log-entry{margin:0}.log-entry .ts{color:var(--muted)}.log-entry .ok{color:var(--green)}.log-entry .err{color:var(--red)}.log-entry .warn{color:var(--orange-l)}
+  .log-box{background:#0d0d0d;border:1px solid var(--ash);border-radius:5px;padding:10px 14px;font-family:monospace;font-size:.72rem;color:var(--text-dim);height:120px;overflow-y:auto;line-height:1.9}
+  .log-entry .ts{color:var(--muted)}.log-entry .ok{color:var(--green)}.log-entry .err{color:var(--red)}.log-entry .warn{color:var(--lime-l)}
 
-  @media(max-width:600px){main{padding:12px}.stat-row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){main{padding:10px}.stat-row{grid-template-columns:1fr 1fr}.sc-header{gap:6px}}
 </style>
 </head>
 <body>
@@ -84,9 +125,10 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <h2><span style="color:var(--red)">Brayan</span> <span style="color:var(--orange)">Streams</span></h2>
+    <h2><span style="color:var(--green)">Radio Patio</span> <span style="color:var(--lime-l)">TV</span></h2>
+    <p class="slogan">Parchate que Fary renunciará jajaja 😂</p>
     <p>Panel de administración — acceso restringido</p>
-    <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="field"><input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Contraseña incorrecta</div>
   </div>
@@ -95,41 +137,29 @@
 <!-- APP -->
 <div id="app">
   <header>
-    <div class="logo"><span class="b">Brayan</span> <span class="s">Streams</span></div>
-    <div style="display:flex;align-items:center;gap:12px">
+    <div class="logo"><span class="b">Radio Patio</span> <span class="s">TV</span></div>
+    <div class="header-right">
       <div class="admin-badge">Admin</div>
-      <button class="btn-logout" onclick="logout()">Salir</button>
+      <button class="btn-sm" onclick="logout()">Salir</button>
     </div>
   </header>
 
   <main>
     <!-- STATS GLOBALES -->
     <div class="stat-row">
-      <div class="stat">
-        <div class="stat-label">Streams activos</div>
-        <div class="stat-value green" id="g-active">0 / 4</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Espectadores totales</div>
-        <div class="stat-value orange" id="g-viewers">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Bitrate total</div>
-        <div class="stat-value" id="g-bitrate">— kbps</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Última actualización</div>
-        <div class="stat-value" id="g-time" style="font-size:1rem">—</div>
-      </div>
+      <div class="stat"><div class="stat-label">Streams activos</div><div class="stat-value green" id="g-active">0 / 4</div></div>
+      <div class="stat"><div class="stat-label">Espectadores</div><div class="stat-value orange" id="g-viewers">—</div></div>
+      <div class="stat"><div class="stat-label">Bitrate total</div><div class="stat-value" id="g-bitrate">—</div></div>
+      <div class="stat"><div class="stat-label">Actualización</div><div class="stat-value" id="g-time" style="font-size:.95rem">—</div></div>
     </div>
 
     <!-- STREAMS -->
-    <div class="section-label">Estado de canchas</div>
+    <div class="section-label">Canchas</div>
     <div class="stream-grid" id="stream-grid"></div>
 
-    <!-- GRÁFICA ESPECTADORES -->
+    <!-- CHART -->
     <div class="chart-wrap">
-      <div class="chart-title">Espectadores por cancha (últimos 10 min)</div>
+      <div class="chart-title">Espectadores por cancha — últimos 10 min</div>
       <canvas id="viewerChart"></canvas>
     </div>
 
@@ -141,149 +171,369 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
-// ── AUTH ─────────────────────────────────────────────────────
-const PASS = 'brayan23@';
+const PASS = 'patiotv23@';
 const TOKEN = 'REEMPLAZAR_CON_TOKEN';
-const SERVER_IP = window.location.hostname !== 'localhost' ? window.location.origin : 'http://TU_IP';
-const STATS_URL = `${SERVER_IP}/stats`;
+const SERVER = window.location.origin;
+const STATS_URL = `${SERVER}/stats`;
 
+// ── Estado de canchas ─────────────────────────────────────
+const state = {
+  canchas: [
+    { id:1, nombre:'Cancha 1', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
+    { id:2, nombre:'Cancha 2', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
+    { id:3, nombre:'Cancha 3', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
+    { id:4, nombre:'Cancha 4', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
+  ]
+};
+
+const hlsPlayers = {};
+let viewerHistory = {1:[],2:[],3:[],4:[]};
+let timeLabels = [];
+let chart, refreshInterval;
+
+// ── AUTH ─────────────────────────────────────────────────
 function doLogin() {
-  const v = document.getElementById('pwd-input').value;
-  if (v === PASS) {
+  if (document.getElementById('pwd-input').value === PASS) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     init();
   } else {
-    const err = document.getElementById('login-error');
-    err.style.display = 'block';
-    setTimeout(() => err.style.display = 'none', 2500);
+    const e = document.getElementById('login-error');
+    e.style.display = 'block';
+    setTimeout(()=>e.style.display='none', 2500);
   }
 }
-
 function logout() {
+  clearInterval(refreshInterval);
+  Object.values(hlsPlayers).forEach(h=>h&&h.destroy());
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('pwd-input').value = '';
-  clearInterval(refreshInterval);
 }
 
-// ── DATOS ─────────────────────────────────────────────────────
-const canchas = ['cancha1','cancha2','cancha3','cancha4'];
-const labels  = ['Cancha 1','Cancha 2','Cancha 3','Cancha 4'];
-let viewerHistory = { cancha1:[], cancha2:[], cancha3:[], cancha4:[] };
-let timeLabels = [];
-let chart;
-let refreshInterval;
+// ── RENDER CARDS ─────────────────────────────────────────
+function renderCards() {
+  const grid = document.getElementById('stream-grid');
+  grid.innerHTML = '';
+  state.canchas.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'stream-card';
+    div.id = `sc-${c.id}`;
 
-// ── PARSEAR XML DE NGINX-RTMP ─────────────────────────────────
-function parseStats(xmlText) {
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, 'text/xml');
-  const result = {};
+    const hlsUrl = `${SERVER}/stream/cancha${c.id}/master.m3u8?token=${TOKEN}`;
 
-  canchas.forEach(key => {
-    result[key] = { live: false, viewers: 0, bitrate: 0, fps: 0, codec: '—', uptime: '—' };
+    div.innerHTML = `
+      <div class="sc-header">
+        <div class="sc-title-wrap">
+          <span class="sc-num">#${c.id}</span>
+          <input class="sc-name-input" id="name-${c.id}" value="${c.nombre}"
+            onchange="renameCancha(${c.id}, this.value)"
+            title="Clic para editar nombre">
+        </div>
+        <div class="sc-status ${c.live?'live':'offline'}" id="status-${c.id}">${c.live?'En vivo':'Offline'}</div>
+      </div>
+
+      <div class="sc-preview" id="preview-wrap-${c.id}" onclick="togglePreview(${c.id})">
+        <video id="preview-video-${c.id}" muted playsinline controls></video>
+        <div class="preview-overlay" id="preview-overlay-${c.id}">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+          </div>
+          <p>Vista previa</p>
+        </div>
+        <div class="preview-loading" id="preview-loading-${c.id}"><div class="spinner"></div></div>
+      </div>
+
+      <div class="quality-row" id="quality-row-${c.id}">
+        <span class="q-label">Calidad:</span>
+        <span class="q-badge active" id="q-auto-${c.id}">Auto</span>
+      </div>
+
+      <div class="sc-body">
+        <div class="sc-row"><span class="sc-key">Espectadores</span><span class="sc-val orange" id="sv-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">Bitrate video</span><span class="sc-val green" id="sb-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">Fotogramas/s</span><span class="sc-val" id="sf-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val" id="sc-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">Tiempo activo</span><span class="sc-val" id="st-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">URL HLS</span><span class="sc-val" style="font-size:.65rem;color:var(--muted);word-break:break-all">/stream/cancha${c.id}/master.m3u8</span></div>
+      </div>
+
+      <div class="sc-input-section">
+        <div class="input-type-row">
+          <div class="type-btn ${c.inputType==='rtmp'?'active':''}" onclick="setInputType(${c.id},'rtmp')">OBS / RTMP</div>
+          <div class="type-btn ${c.inputType==='m3u8'?'active':''}" onclick="setInputType(${c.id},'m3u8')">M3U8 externo</div>
+          <div class="type-btn ${c.inputType==='file'?'active':''}" onclick="setInputType(${c.id},'file')">Archivo local</div>
+        </div>
+        <div id="input-area-${c.id}">
+          ${renderInputArea(c)}
+        </div>
+        <div class="stream-status-row">
+          <span class="stream-pid" id="pid-${c.id}">${c.pid ? `PID: ${c.pid}` : ''}</span>
+          <button class="btn-action btn-stop" onclick="stopStream(${c.id})" ${!c.pid?'style="opacity:.4;cursor:not-allowed"':''}>⏹ Detener</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
   });
+}
 
-  const streams = xml.querySelectorAll('stream');
-  streams.forEach(s => {
+function renderInputArea(c) {
+  if (c.inputType === 'rtmp') {
+    return `
+      <p style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+        OBS → Settings → Stream<br>
+        <span style="color:var(--lime-l);font-family:monospace">${SERVER.replace('http://','rtmp://')}/live</span> &nbsp;|&nbsp; Key: <span style="color:var(--lime-l);font-family:monospace">cancha${c.id}</span>
+      </p>
+      <div class="input-row">
+        <button class="btn-action btn-preview" style="width:100%" onclick="togglePreview(${c.id})">▶ Vista previa</button>
+      </div>
+    `;
+  } else if (c.inputType === 'm3u8') {
+    return `
+      <div class="input-row">
+        <input id="url-input-${c.id}" type="text" placeholder="https://fuente-externa.com/stream.m3u8" value="${c.inputUrl}">
+      </div>
+      <div class="input-row">
+        <button class="btn-action btn-start" onclick="startProxy(${c.id})">▶ Iniciar</button>
+        <button class="btn-action btn-preview" onclick="togglePreview(${c.id})">👁 Preview</button>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="input-row">
+        <input id="url-input-${c.id}" type="text" placeholder="/ruta/al/archivo.mp4 o .m3u8" value="${c.inputUrl}">
+      </div>
+      <div class="input-row">
+        <button class="btn-action btn-start" onclick="startProxy(${c.id})">▶ Iniciar</button>
+        <button class="btn-action btn-preview" onclick="togglePreview(${c.id})">👁 Preview</button>
+      </div>
+    `;
+  }
+}
+
+// ── RENAME CANCHA ─────────────────────────────────────────
+function renameCancha(id, nombre) {
+  const c = state.canchas.find(x=>x.id===id);
+  c.nombre = nombre.trim() || `Cancha ${id}`;
+  log(`Cancha ${id} renombrada a "${c.nombre}"`, 'ok');
+  // Actualizar página pública via API (si existe endpoint)
+}
+
+// ── INPUT TYPE ────────────────────────────────────────────
+function setInputType(id, type) {
+  const c = state.canchas.find(x=>x.id===id);
+  c.inputType = type;
+  renderCards();
+}
+
+// ── INICIAR PROXY (M3U8 externo / archivo) ────────────────
+async function startProxy(id) {
+  const c = state.canchas.find(x=>x.id===id);
+  const urlInput = document.getElementById(`url-input-${id}`);
+  const url = urlInput ? urlInput.value.trim() : '';
+  if (!url) { log(`Cancha ${id}: URL vacía`, 'err'); return; }
+  c.inputUrl = url;
+
+  log(`Cancha ${id}: iniciando proxy desde ${url}`, 'warn');
+
+  try {
+    const res = await fetch('/api/stream/start', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ cancha: `cancha${id}`, url })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      c.pid = data.pid;
+      log(`Cancha ${id}: stream iniciado (PID ${data.pid})`, 'ok');
+    } else {
+      log(`Cancha ${id}: error al iniciar — usa bs-proxy en terminal`, 'warn');
+      log(`  bs-proxy cancha${id} "${url}"`, 'warn');
+    }
+  } catch {
+    log(`Cancha ${id}: sin API — ejecuta en terminal:`, 'warn');
+    log(`  bs-proxy cancha${id} "${url}"`, 'warn');
+  }
+  renderCards();
+}
+
+// ── DETENER STREAM ────────────────────────────────────────
+async function stopStream(id) {
+  const c = state.canchas.find(x=>x.id===id);
+  log(`Cancha ${id}: deteniendo stream...`, 'warn');
+
+  try {
+    const res = await fetch('/api/stream/stop', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ cancha: `cancha${id}` })
+    });
+    if (res.ok) {
+      c.pid = null;
+      log(`Cancha ${id}: stream detenido`, 'ok');
+    } else {
+      log(`Cancha ${id}: sin API — ejecuta en terminal: bs-stop cancha${id}`, 'warn');
+    }
+  } catch {
+    log(`Cancha ${id}: ejecuta en terminal: bs-stop cancha${id}`, 'warn');
+  }
+  renderCards();
+}
+
+// ── VISTA PREVIA ──────────────────────────────────────────
+function togglePreview(id) {
+  const video = document.getElementById(`preview-video-${id}`);
+  const overlay = document.getElementById(`preview-overlay-${id}`);
+  const loading = document.getElementById(`preview-loading-${id}`);
+
+  if (video.style.display === 'block') {
+    // Detener preview
+    if (hlsPlayers[id]) { hlsPlayers[id].destroy(); delete hlsPlayers[id]; }
+    video.src = '';
+    video.style.display = 'none';
+    overlay.style.display = 'flex';
+    log(`Cancha ${id}: vista previa cerrada`, 'ok');
+    return;
+  }
+
+  // Iniciar preview
+  overlay.style.display = 'none';
+  loading.style.display = 'flex';
+  const url = `${SERVER}/stream/cancha${id}/master.m3u8?token=${TOKEN}`;
+
+  if (Hls.isSupported()) {
+    const hls = new Hls({ lowLatencyMode:true, manifestLoadingMaxRetry:3 });
+    hlsPlayers[id] = hls;
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => {
+      loading.style.display = 'none';
+      video.style.display = 'block';
+      video.play().catch(()=>{});
+      log(`Cancha ${id}: vista previa activa`, 'ok');
+      // Mostrar calidades disponibles
+      renderQualities(id, hls, data.levels);
+    });
+    hls.on(Hls.Events.ERROR, (e, data) => {
+      if (data.fatal) {
+        loading.style.display = 'none';
+        overlay.style.display = 'flex';
+        log(`Cancha ${id}: sin señal para vista previa`, 'err');
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+    video.addEventListener('loadedmetadata', () => {
+      loading.style.display = 'none';
+      video.style.display = 'block';
+      video.play().catch(()=>{});
+    }, {once:true});
+    video.addEventListener('error', () => {
+      loading.style.display = 'none';
+      overlay.style.display = 'flex';
+    }, {once:true});
+  }
+}
+
+// ── CALIDADES ─────────────────────────────────────────────
+function renderQualities(id, hls, levels) {
+  const row = document.getElementById(`quality-row-${id}`);
+  if (!levels || levels.length <= 1) return;
+
+  let html = '<span class="q-label">Calidad:</span>';
+  html += `<span class="q-badge active" id="q-auto-${id}" onclick="setQuality(${id},-1)">Auto</span>`;
+  levels.forEach((l, i) => {
+    const label = l.height ? `${l.height}p` : `${Math.round(l.bitrate/1000)}k`;
+    html += `<span class="q-badge" id="q-${id}-${i}" onclick="setQuality(${id},${i})">${label}</span>`;
+  });
+  row.innerHTML = html;
+  row._hls = hls;
+}
+
+function setQuality(id, level) {
+  const hls = hlsPlayers[id];
+  if (!hls) return;
+  hls.currentLevel = level;
+  const row = document.getElementById(`quality-row-${id}`);
+  row.querySelectorAll('.q-badge').forEach(b => b.classList.remove('active'));
+  const target = level === -1
+    ? document.getElementById(`q-auto-${id}`)
+    : document.getElementById(`q-${id}-${level}`);
+  if (target) target.classList.add('active');
+  log(`Cancha ${id}: calidad cambiada a ${level===-1?'Auto':level}`, 'ok');
+}
+
+// ── STATS NGINX-RTMP ──────────────────────────────────────
+function parseStats(xmlText) {
+  const xml = new DOMParser().parseFromString(xmlText, 'text/xml');
+  const result = {};
+  state.canchas.forEach(c => { result[`cancha${c.id}`] = { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' }; });
+
+  xml.querySelectorAll('stream').forEach(s => {
     const name = s.querySelector('name')?.textContent?.trim();
     if (!name || !result[name]) return;
-    const clients = parseInt(s.querySelector('nclients')?.textContent || '0');
-    const bw = parseInt(s.querySelector('bw_video')?.textContent || '0');
-    const codec = s.querySelector('meta video codec')?.textContent || '—';
-    const fps = s.querySelector('meta video frame_rate')?.textContent || '0';
-    const time = parseInt(s.querySelector('time')?.textContent || '0');
-    const mins = Math.floor(time / 1000 / 60);
-    const secs = Math.floor((time / 1000) % 60);
-
-    result[name] = {
-      live: clients > 0 || bw > 0,
-      viewers: Math.max(0, clients - 1),
-      bitrate: Math.round(bw / 1000),
-      fps: Math.round(parseFloat(fps)),
-      codec: codec || '—',
-      uptime: time > 0 ? `${mins}m ${secs}s` : '—',
-    };
+    const clients = parseInt(s.querySelector('nclients')?.textContent||'0');
+    const bw = parseInt(s.querySelector('bw_video')?.textContent||'0');
+    const codec = s.querySelector('meta video codec')?.textContent||'—';
+    const fps = parseFloat(s.querySelector('meta video frame_rate')?.textContent||'0');
+    const time = parseInt(s.querySelector('time')?.textContent||'0');
+    const m = Math.floor(time/1000/60), sec = Math.floor((time/1000)%60);
+    result[name] = { live: clients>0||bw>0, viewers: Math.max(0,clients-1), bitrate: Math.round(bw/1000), fps: Math.round(fps), codec, uptime: time>0?`${m}m ${sec}s`:'—' };
   });
-
   return result;
 }
 
-// ── ACTUALIZAR UI ─────────────────────────────────────────────
 function updateUI(data) {
-  let active = 0, totalViewers = 0, totalBitrate = 0;
-  const grid = document.getElementById('stream-grid');
+  let active=0, totalV=0, totalB=0;
+  state.canchas.forEach(c => {
+    const d = data[`cancha${c.id}`];
+    c.live = d.live; c.viewers = d.viewers; c.bitrate = d.bitrate; c.fps = d.fps; c.codec = d.codec; c.uptime = d.uptime;
+    if (d.live) { active++; totalV+=d.viewers; totalB+=d.bitrate; }
 
-  canchas.forEach((key, i) => {
-    const d = data[key];
-    if (d.live) { active++; totalViewers += d.viewers; totalBitrate += d.bitrate; }
-
-    let card = document.getElementById(`sc-${key}`);
-    if (!card) {
-      card = document.createElement('div');
-      card.className = 'stream-card';
-      card.id = `sc-${key}`;
-      grid.appendChild(card);
+    const el = (id) => document.getElementById(id);
+    if (el(`status-${c.id}`)) {
+      el(`status-${c.id}`).className = `sc-status ${d.live?'live':'offline'}`;
+      el(`status-${c.id}`).textContent = d.live?'En vivo':'Offline';
+      el(`sv-${c.id}`).textContent = d.live ? d.viewers : '—';
+      el(`sb-${c.id}`).textContent = d.live ? d.bitrate+' kbps' : '—';
+      el(`sf-${c.id}`).textContent = d.live ? d.fps+' fps' : '—';
+      el(`sc-${c.id}`).textContent = d.live ? d.codec : '—';
+      el(`st-${c.id}`).textContent = d.live ? d.uptime : '—';
     }
 
-    card.innerHTML = `
-      <div class="sc-header">
-        <div class="sc-title"><span>#${i+1}</span>${labels[i]}</div>
-        <div class="sc-status ${d.live ? 'live' : 'offline'}">${d.live ? 'En vivo' : 'Offline'}</div>
-      </div>
-      <div class="sc-body">
-        <div class="sc-row"><span class="sc-key">Espectadores</span><span class="sc-val ${d.live?'orange':''}">${d.live ? d.viewers : '—'}</span></div>
-        <div class="sc-row"><span class="sc-key">Bitrate video</span><span class="sc-val ${d.live?'green':''}">${d.live ? d.bitrate+' kbps' : '—'}</span></div>
-        <div class="sc-row"><span class="sc-key">Fotogramas/s</span><span class="sc-val">${d.live ? d.fps+' fps' : '—'}</span></div>
-        <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val">${d.codec}</span></div>
-        <div class="sc-row"><span class="sc-key">Tiempo activo</span><span class="sc-val">${d.uptime}</span></div>
-      </div>
-    `;
-
-    viewerHistory[key].push(d.viewers);
-    if (viewerHistory[key].length > 10) viewerHistory[key].shift();
+    viewerHistory[c.id].push(d.viewers);
+    if (viewerHistory[c.id].length > 10) viewerHistory[c.id].shift();
   });
 
   document.getElementById('g-active').textContent = `${active} / 4`;
-  document.getElementById('g-viewers').textContent = active > 0 ? totalViewers : '—';
-  document.getElementById('g-bitrate').textContent = totalBitrate > 0 ? totalBitrate + ' kbps' : '—';
+  document.getElementById('g-viewers').textContent = active>0 ? totalV : '—';
+  document.getElementById('g-bitrate').textContent = totalB>0 ? totalB+' kbps' : '—';
   document.getElementById('g-time').textContent = new Date().toLocaleTimeString('es-CO');
-
-  const now = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  timeLabels.push(now);
-  if (timeLabels.length > 10) timeLabels.shift();
   updateChart();
 }
 
-// ── CHART ─────────────────────────────────────────────────────
-const COLORS = ['#c0202a','#e05a1a','#f07a3a','#22c55e'];
-
+// ── CHART ─────────────────────────────────────────────────
+const COLORS = ['#16a34a','#22c55e','#84cc16','#a3e635'];
 function buildChart() {
   const ctx = document.getElementById('viewerChart').getContext('2d');
   chart = new Chart(ctx, {
-    type: 'line',
-    data: {
+    type:'line',
+    data:{
       labels: timeLabels,
-      datasets: canchas.map((key, i) => ({
-        label: labels[i],
-        data: viewerHistory[key],
+      datasets: state.canchas.map((c,i)=>({
+        label: c.nombre,
+        data: viewerHistory[c.id],
         borderColor: COLORS[i],
-        backgroundColor: COLORS[i] + '22',
-        borderWidth: 1.5,
-        pointRadius: 2,
-        fill: true,
-        tension: 0.3,
+        backgroundColor: COLORS[i]+'22',
+        borderWidth:1.5, pointRadius:2, fill:true, tension:.3
       }))
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { labels: { color: '#888', font: { size: 11 }, boxWidth: 12 } } },
-      scales: {
-        x: { ticks: { color: '#555', font: { size: 10 }, maxTicksLimit: 5 }, grid: { color: '#1e1e1e' } },
-        y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#1e1e1e' }, min: 0 }
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } } },
+      scales:{
+        x:{ ticks:{color:'#555',font:{size:10},maxTicksLimit:5}, grid:{color:'#1a1a1a'} },
+        y:{ ticks:{color:'#555',font:{size:10}}, grid:{color:'#1a1a1a'}, min:0 }
       }
     }
   });
@@ -291,13 +541,16 @@ function buildChart() {
 
 function updateChart() {
   if (!chart) return;
+  const now = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  timeLabels.push(now);
+  if (timeLabels.length>10) timeLabels.shift();
   chart.data.labels = [...timeLabels];
-  canchas.forEach((key, i) => { chart.data.datasets[i].data = [...viewerHistory[key]]; });
+  state.canchas.forEach((c,i)=>{ chart.data.datasets[i].data = [...viewerHistory[c.id]]; });
   chart.update('none');
 }
 
-// ── LOG ───────────────────────────────────────────────────────
-function log(msg, type = 'ok') {
+// ── LOG ───────────────────────────────────────────────────
+function log(msg, type='ok') {
   const box = document.getElementById('log-box');
   const ts = new Date().toLocaleTimeString('es-CO');
   const div = document.createElement('div');
@@ -305,35 +558,29 @@ function log(msg, type = 'ok') {
   div.innerHTML = `<span class="ts">[${ts}]</span> <span class="${type}">${msg}</span>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
-  if (box.children.length > 50) box.removeChild(box.firstChild);
+  if (box.children.length>60) box.removeChild(box.firstChild);
 }
 
-// ── FETCH STATS ───────────────────────────────────────────────
+// ── FETCH STATS ───────────────────────────────────────────
 async function fetchStats() {
   try {
     const res = await fetch(STATS_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    const data = parseStats(text);
-    updateUI(data);
-    log('Stats actualizadas correctamente', 'ok');
-  } catch (e) {
-    log(`Error al obtener stats: ${e.message}`, 'err');
-    // Datos de demo si el servidor no está listo
+    updateUI(parseStats(text));
+  } catch(e) {
     const demo = {};
-    canchas.forEach(k => {
-      demo[k] = { live: false, viewers: 0, bitrate: 0, fps: 0, codec: '—', uptime: '—' };
-    });
+    state.canchas.forEach(c=>{ demo[`cancha${c.id}`]={live:false,viewers:0,bitrate:0,fps:0,codec:'—',uptime:'—'}; });
     updateUI(demo);
   }
 }
 
-// ── INIT ──────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────
 function init() {
+  renderCards();
   buildChart();
   fetchStats();
-  log('Panel de administración iniciado', 'ok');
-  log(`Conectando a ${STATS_URL}`, 'warn');
+  log('Panel iniciado', 'ok');
   refreshInterval = setInterval(fetchStats, 5000);
 }
 

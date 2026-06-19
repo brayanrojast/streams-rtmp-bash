@@ -3,41 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brayan Streams — Torneo Colegial</title>
+<title>Radio Patio TV — Torneo Colegial</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <style>
   :root {
-    --black:#0a0a0a;--coal:#141414;--ember:#1a0a04;
-    --red:#c0202a;--red-dim:#7a1218;
-    --orange:#e05a1a;--orange-l:#f07a3a;
+    --black:#0a0a0a;--coal:#141414;--ember:#04140a;
+    --green:#16a34a;--green-dim:#0e6b32;
+    --lime:#84cc16;--lime-l:#a3e635;
     --ash:#2a2a2a;--muted:#666;
     --text:#e8e2d8;--text-dim:#9a9490;
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.5;min-height:100vh}
-  header{background:var(--coal);border-bottom:2px solid var(--red);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+  header{background:var(--coal);border-bottom:2px solid var(--green);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
   .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.6rem;letter-spacing:.04em;text-transform:uppercase}
-  .logo .b{color:var(--red)}.logo .s{color:var(--orange)}
-  .live-badge{display:flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:3px}
+  .logo .b{color:var(--green)}.logo .s{color:var(--lime-l)}
+  .live-badge{display:flex;align-items:center;gap:7px;background:var(--green);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:3px}
   .live-badge::before{content:'';width:7px;height:7px;background:#fff;border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
   .hero{background:linear-gradient(135deg,var(--ember) 0%,var(--black) 60%);border-bottom:1px solid var(--ash);padding:36px 24px 28px;text-align:center}
-  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--orange);margin-bottom:8px}
+  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--lime-l);margin-bottom:8px}
   .hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(2.2rem,6vw,3.8rem);text-transform:uppercase;letter-spacing:.02em;line-height:1}
-  .hero-title em{font-style:normal;color:var(--red)}
+  .hero-title em{font-style:normal;color:var(--green)}
   .hero-sub{margin-top:8px;color:var(--text-dim);font-size:.88rem}
   .streams-section{padding:28px 20px 48px;max-width:1400px;margin:0 auto}
-  .section-label{font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+  .section-label{font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--lime-l);margin-bottom:18px;display:flex;align-items:center;gap:10px}
   .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,540px),1fr));gap:18px}
   .card{background:var(--coal);border:1px solid var(--ash);border-radius:6px;overflow:hidden;transition:border-color .2s}
-  .card:hover{border-color:var(--red-dim)}
+  .card:hover{border-color:var(--green-dim)}
   .card-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--ash);background:#111}
   .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.06em;text-transform:uppercase}
-  .card-title span{color:var(--orange-l);margin-right:5px}
+  .card-title span{color:var(--lime-l);margin-right:5px}
   .status-dot{width:8px;height:8px;border-radius:50%;background:var(--ash);transition:background .3s}
-  .status-dot.live{background:var(--red);animation:pulse 1.4s infinite}
+  .status-dot.live{background:var(--green);animation:pulse 1.4s infinite}
   .video-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#050505}
   .video-wrap video{width:100%;height:100%;object-fit:contain;display:block}
   .overlay-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#050505}
@@ -45,27 +45,27 @@
   .overlay-idle p{font-size:.75rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
   .card-footer{padding:9px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--ash)}
   .viewers{font-size:.75rem;color:var(--text-dim)}
-  .viewers strong{color:var(--orange-l)}
+  .viewers strong{color:var(--lime-l)}
   footer{border-top:1px solid var(--ash);padding:18px 24px;text-align:center;color:var(--text-dim);font-size:.75rem;letter-spacing:.05em}
-  footer strong{color:var(--orange)}
+  footer strong{color:var(--green)}
   @media(max-width:600px){.hero{padding:24px 14px 20px}.streams-section{padding:18px 10px 32px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo"><span class="b">Brayan</span> <span class="s">Streams</span></div>
+  <div class="logo"><span class="b">Radio Patio</span> <span class="s">TV</span></div>
   <div class="live-badge">En vivo</div>
 </header>
 <div class="hero">
   <div class="hero-eyebrow">Torneo Colegial de Deportes</div>
-  <h1 class="hero-title">Transmisión <em>en vivo</em></h1>
-  <p class="hero-sub">Sigue todos los partidos en tiempo real desde cualquier dispositivo</p>
+  <h1 class="hero-title">Radio Patio <em>TV</em></h1>
+  <p class="hero-sub">Parchate que Fary renunciará jajaja 😂</p>
 </div>
 <section class="streams-section">
   <div class="section-label">Canchas activas</div>
   <div class="grid" id="grid"></div>
 </section>
-<footer><strong>Brayan Streams</strong> &mdash; Torneo Colegial &mdash; Todos los derechos reservados</footer>
+<footer><strong>Radio Patio TV</strong> &mdash; Torneo Colegial &mdash; Todos los derechos reservados</footer>
 <script>
 const TOKEN = 'REEMPLAZAR_CON_TOKEN';
 const SERVER = window.location.hostname === 'localhost' ? 'http://TU_IP' : '';
@@ -83,7 +83,7 @@ function buildGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
   canchas.forEach(c => {
-    const url = `${SERVER}/stream/cancha${c.id}/index.m3u8?token=${TOKEN}`;
+    const url = `${SERVER}/stream/cancha${c.id}/master.m3u8?token=${TOKEN}`;
     const div = document.createElement('div');
     div.className = 'card';
     div.id = `card-${c.id}`;
