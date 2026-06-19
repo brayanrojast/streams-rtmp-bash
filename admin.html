@@ -253,7 +253,7 @@ function renderCards() {
         <div class="sc-row"><span class="sc-key">Espectadores</span><span class="sc-val orange" id="sv-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">Bitrate video</span><span class="sc-val green" id="sb-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">Fotogramas/s</span><span class="sc-val" id="sf-${c.id}">—</span></div>
-        <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val" id="sc-${c.id}">—</span></div>
+        <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val" id="codec-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">Tiempo activo</span><span class="sc-val" id="st-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">URL HLS</span><span class="sc-val" style="font-size:.65rem;color:var(--muted);word-break:break-all">/stream/cancha${c.id}/master.m3u8</span></div>
       </div>
@@ -509,7 +509,7 @@ function updateUI(data) {
       el(`sv-${c.id}`).textContent = d.live ? d.viewers : '—';
       el(`sb-${c.id}`).textContent = d.live ? d.bitrate+' kbps' : '—';
       el(`sf-${c.id}`).textContent = d.live ? d.fps+' fps' : '—';
-      el(`sc-${c.id}`).textContent = d.live ? d.codec : '—';
+      el(`codec-${c.id}`).textContent = d.live ? d.codec : '—';
       el(`st-${c.id}`).textContent = d.live ? d.uptime : '—';
     }
 
