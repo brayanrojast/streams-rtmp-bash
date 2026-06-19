@@ -172,7 +172,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
 const PASS = 'patiotv23@';
-const TOKEN = 'REEMPLAZAR_CON_TOKEN';
+// Token desactivado por el momento
 const SERVER = window.location.origin;
 const STATS_URL = `${SERVER}/stats`;
 
@@ -220,7 +220,7 @@ function renderCards() {
     div.className = 'stream-card';
     div.id = `sc-${c.id}`;
 
-    const hlsUrl = `${SERVER}/stream/cancha${c.id}/master.m3u8?token=${TOKEN}`;
+    const hlsUrl = `${SERVER}/stream/cancha${c.id}/master.m3u8`;
 
     div.innerHTML = `
       <div class="sc-header">
@@ -399,7 +399,7 @@ function togglePreview(id) {
   // Iniciar preview
   overlay.style.display = 'none';
   loading.style.display = 'flex';
-  const url = `${SERVER}/stream/cancha${id}/master.m3u8?token=${TOKEN}`;
+  const url = `${SERVER}/stream/cancha${id}/master.m3u8`;
 
   if (Hls.isSupported()) {
     const hls = new Hls({ lowLatencyMode:true, manifestLoadingMaxRetry:3 });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radio Patio TV — Torneo Colegial</title>
+<title>Radio Patio TV — En vivo</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <style>
@@ -23,10 +23,15 @@
   .live-badge::before{content:'';width:7px;height:7px;background:#fff;border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
   .hero{background:linear-gradient(135deg,var(--ember) 0%,var(--black) 60%);border-bottom:1px solid var(--ash);padding:36px 24px 28px;text-align:center}
-  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--lime-l);margin-bottom:8px}
   .hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(2.2rem,6vw,3.8rem);text-transform:uppercase;letter-spacing:.02em;line-height:1}
   .hero-title em{font-style:normal;color:var(--green)}
   .hero-sub{margin-top:8px;color:var(--text-dim);font-size:.88rem}
+  .countdown{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+  .cd-box{background:var(--coal);border:1px solid var(--ash);border-top:2px solid var(--green);border-radius:6px;padding:10px 16px;min-width:68px;text-align:center}
+  .cd-num{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.8rem;color:var(--green);font-variant-numeric:tabular-nums;line-height:1}
+  .cd-label{display:block;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-top:5px}
+  .cd-sep{align-self:center;color:var(--ash);font-size:1.4rem;font-weight:900}
+  .countdown-caption{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lime-l);margin-top:18px;margin-bottom:2px}
   .streams-section{padding:28px 20px 48px;max-width:1400px;margin:0 auto}
   .section-label{font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--lime-l);margin-bottom:18px;display:flex;align-items:center;gap:10px}
   .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
@@ -57,17 +62,23 @@
   <div class="live-badge">En vivo</div>
 </header>
 <div class="hero">
-  <div class="hero-eyebrow">Torneo Colegial de Deportes</div>
   <h1 class="hero-title">Radio Patio <em>TV</em></h1>
   <p class="hero-sub">Parchate que Fary renunciará jajaja 😂</p>
+  <div class="countdown-caption">Fary renuncia en</div>
+  <div class="countdown" id="countdown">
+    <div class="cd-box"><span class="cd-num" id="cd-days">00</span><span class="cd-label">Días</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-hours">00</span><span class="cd-label">Horas</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Min</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-secs">00</span><span class="cd-label">Seg</span></div>
+  </div>
 </div>
 <section class="streams-section">
   <div class="section-label">Canchas activas</div>
   <div class="grid" id="grid"></div>
 </section>
-<footer><strong>Radio Patio TV</strong> &mdash; Torneo Colegial &mdash; Todos los derechos reservados</footer>
+<footer><strong>Radio Patio TV</strong> &mdash; Todos los derechos reservados</footer>
 <script>
-const TOKEN = 'REEMPLAZAR_CON_TOKEN';
+// Token desactivado por el momento
 const SERVER = window.location.hostname === 'localhost' ? 'http://TU_IP' : '';
 
 const canchas = [
@@ -83,7 +94,7 @@ function buildGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
   canchas.forEach(c => {
-    const url = `${SERVER}/stream/cancha${c.id}/master.m3u8?token=${TOKEN}`;
+    const url = `${SERVER}/stream/cancha${c.id}/master.m3u8`;
     const div = document.createElement('div');
     div.className = 'card';
     div.id = `card-${c.id}`;
@@ -146,6 +157,24 @@ function initPlayer(id, url) {
 }
 
 buildGrid();
+
+// ── CONTADOR: 30 de este mes a las 12:00 am ───────────────
+function updateCountdown() {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), 30, 0, 0, 0);
+  let diff = target - now;
+  if (diff < 0) diff = 0;
+  const d = Math.floor(diff / (1000*60*60*24));
+  const h = Math.floor((diff / (1000*60*60)) % 24);
+  const m = Math.floor((diff / (1000*60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById('cd-days').textContent = String(d).padStart(2,'0');
+  document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+  document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
 </script>
 </body>
 </html>
