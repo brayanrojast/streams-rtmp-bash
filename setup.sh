@@ -1,276 +1,276 @@
 #!/bin/bash
+# ╔══════════════════════════════════════════════════════════════╗
+# ║        Radio Patio TV — Setup completo v2.0                ║
+# ║  Un solo comando instala TODO: nginx-rtmp, ABR, API, web   ║
+# ║  curl -fsSL https://raw.githubusercontent.com/brayanrojast/ ║
+# ║    streams-rtmp-bash/refs/heads/main/setup.sh | bash        ║
+# ╚══════════════════════════════════════════════════════════════╝
 set -e
 
+BASE_URL="https://raw.githubusercontent.com/brayanrojast/streams-rtmp-bash/refs/heads/main"
+WEBROOT="/var/www/brayanstreams"
+ENV_FILE="/etc/brayanstreams.env"
+
 echo ""
-echo "██████╗ ██████╗  █████╗ ██╗   ██╗ █████╗ ███╗   ██╗"
-echo "██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝██╔══██╗████╗  ██║"
-echo "██████╔╝██████╔╝███████║ ╚████╔╝ ███████║██╔██╗ ██║"
-echo "██╔══██╗██╔══██╗██╔══██║  ╚██╔╝  ██╔══██║██║╚██╗██║"
-echo "██████╔╝██║  ██║██║  ██║   ██║   ██║  ██║██║ ╚████║"
-echo "╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝"
-echo "              STREAMS — Setup v1.1"
+echo "██████╗  █████╗ ██████╗ ██╗ ██████╗     ██████╗  █████╗ ████████╗██╗ ██████╗"
+echo "██╔══██╗██╔══██╗██╔══██╗██║██╔═══██╗    ██╔══██╗██╔══██╗╚══██╔══╝██║██╔═══██╗"
+echo "██████╔╝███████║██║  ██║██║██║   ██║    ██████╔╝███████║   ██║   ██║██║   ██║"
+echo "██╔══██╗██╔══██║██║  ██║██║██║   ██║    ██╔═══╝ ██╔══██║   ██║   ██║██║   ██║"
+echo "██║  ██║██║  ██║██████╔╝██║╚██████╔╝    ██║     ██║  ██║   ██║   ██║╚██████╔╝"
+echo "╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝     ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝"
+echo "                         TV — Setup v2.0"
 echo ""
 
-# ── Detectar IP pública automáticamente ──────────────────────
-echo "  Detectando IP pública del servidor..."
-SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org || \
-            curl -s --max-time 5 https://ifconfig.me || \
-            curl -s --max-time 5 https://icanhazip.com || \
-            hostname -I | awk '{print $1}')
-
-if [ -z "$SERVER_IP" ]; then
-    echo "❌ No se pudo detectar la IP. Verifica la conexión a internet."
-    exit 1
+# ── Verificar root ────────────────────────────────────────────────────────────
+if [ "$(id -u)" -ne 0 ]; then
+  echo "❌ Este script debe ejecutarse como root (sudo bash setup.sh)"
+  exit 1
 fi
 
+# ── Detectar IP pública ───────────────────────────────────────────────────────
+echo "  Detectando IP pública del servidor..."
+SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org \
+         || curl -s --max-time 5 https://ifconfig.me \
+         || curl -s --max-time 5 https://icanhazip.com \
+         || hostname -I | awk '{print $1}')
+
+if [ -z "$SERVER_IP" ]; then
+  echo "❌ No se pudo detectar la IP. Verifica la conexión a internet."
+  exit 1
+fi
 echo "  ✅ IP detectada: $SERVER_IP"
 echo ""
 
-# ============================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 # 1. ACTUALIZAR SISTEMA
-# ============================================================
-echo "=== [1/9] Actualizando sistema ==="
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [1/10] Actualizando sistema ==="
 apt update && apt upgrade -y
 
-# ============================================================
-# 2. INSTALAR DEPENDENCIAS
-# ============================================================
-echo "=== [2/9] Instalando paquetes ==="
-apt install -y nginx libnginx-mod-rtmp ffmpeg ufw curl openssl
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. INSTALAR DEPENDENCIAS BASE
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [2/10] Instalando paquetes ==="
+apt install -y nginx libnginx-mod-rtmp ffmpeg ufw curl openssl htop
 
-# ============================================================
+# ── Node.js 20.x ──────────────────────────────────────────────────────────────
+if ! command -v node >/dev/null 2>&1; then
+  echo "  Instalando Node.js 20.x..."
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  apt-get install -y nodejs
+fi
+echo "  ✅ Node.js: $(node --version)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # 3. CONFIGURAR SSH EN PUERTO 22022
-# ============================================================
-echo "=== [3/9] Configurando SSH ==="
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [3/10] Configurando SSH en puerto 22022 ==="
 mkdir -p /etc/ssh/sshd_config.d
-cat << 'EOF' > /etc/ssh/sshd_config.d/00-custom.conf
+cat > /etc/ssh/sshd_config.d/00-custom.conf << 'SSHEOF'
 Port 22022
 ClientAliveInterval 60
 ClientAliveCountMax 3
 PermitRootLogin yes
 PasswordAuthentication yes
-EOF
+SSHEOF
 systemctl restart ssh || service ssh restart
+echo "  ✅ SSH ahora escucha en puerto 22022"
 
-# ============================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 # 4. CONFIGURAR FIREWALL
-# ============================================================
-echo "=== [4/9] Configurando firewall ==="
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [4/10] Configurando firewall ==="
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow 22022/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw allow 1935/tcp
-ufw allow 8080/tcp
+ufw allow 22022/tcp   # SSH
+ufw allow 80/tcp      # HTTP
+ufw allow 443/tcp     # HTTPS (futuro)
+ufw allow 1935/tcp    # RTMP (OBS)
+ufw allow 8080/tcp    # Stats alternativo
 ufw --force enable
+echo "  ✅ Firewall activo"
 
-# ============================================================
-# 5. GENERAR TOKEN SECRETO
-# ============================================================
-echo "=== [5/9] Generando token de seguridad ==="
-SECRET_TOKEN=$(openssl rand -hex 32)
-echo "TOKEN_SECRET=$SECRET_TOKEN" > /etc/brayanstreams.env
-echo "SERVER_IP=$SERVER_IP" >> /etc/brayanstreams.env
-chmod 600 /etc/brayanstreams.env
+# ═══════════════════════════════════════════════════════════════════════════════
+# 5. GENERAR TOKEN Y GUARDAR ENTORNO
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [5/10] Generando token de seguridad ==="
 
-# ============================================================
-# 6. CONFIGURAR NGINX + RTMP
-# ============================================================
-echo "=== [6/9] Configurando Nginx + RTMP ==="
+# Reusar token existente si ya hay una instalación previa
+if [ -f "$ENV_FILE" ]; then
+  source "$ENV_FILE"
+  echo "  ♻️  Token existente reutilizado"
+else
+  SECRET_TOKEN=$(openssl rand -hex 32)
+fi
 
-mkdir -p /var/www/brayanstreams
-mkdir -p /tmp/hls/cancha1
-mkdir -p /tmp/hls/cancha2
-mkdir -p /tmp/hls/cancha3
-mkdir -p /tmp/hls/cancha4
-chmod -R 777 /tmp/hls
+cat > "$ENV_FILE" << ENVEOF
+TOKEN_SECRET=$SECRET_TOKEN
+SERVER_IP=$SERVER_IP
+ENVEOF
+chmod 600 "$ENV_FILE"
+echo "  ✅ Token guardado en $ENV_FILE"
 
-cat << 'NGINXCONF' > /etc/nginx/nginx.conf
-user www-data;
-worker_processes auto;
-pid /run/nginx.pid;
-include /etc/nginx/modules-enabled/*.conf;
+# ═══════════════════════════════════════════════════════════════════════════════
+# 6. DESCARGAR SCRIPTS DESDE GITHUB
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [6/10] Descargando scripts desde GitHub ==="
 
-events {
-    worker_connections 2048;
+dl() {
+  local src="$1" dst="$2" mode="${3:-644}"
+  if curl -fsSL "$BASE_URL/$src" -o "$dst"; then
+    chmod "$mode" "$dst"
+    echo "  ✅ $dst"
+  else
+    echo "  ❌ Error descargando $src — abortando"
+    exit 1
+  fi
 }
 
-rtmp {
-    server {
-        listen 1935;
-        chunk_size 4096;
-        timeout 30s;
+# Scripts de sistema
+dl "bs-abr.sh"    "/usr/local/bin/bs-abr.sh"  755
+dl "bs-utils.sh"  "/usr/local/bin/bs-utils"   755
 
-        application live {
-            live on;
-            record off;
+# Backend API
+mkdir -p /opt/bs-api
+dl "server.js"    "/opt/bs-api/server.js"      644
 
-            hls on;
-            hls_path /tmp/hls;
-            hls_fragment 2s;
-            hls_playlist_length 10s;
-            hls_nested on;
-        }
-    }
-}
+# Servicio systemd
+dl "bs-api.service" "/etc/systemd/system/bs-api.service" 644
 
-http {
-    sendfile on;
-    tcp_nopush on;
-    types_hash_max_size 2048;
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
+# ═══════════════════════════════════════════════════════════════════════════════
+# 7. CONFIGURAR NGINX (con ABR + API en una sola config)
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [7/10] Configurando Nginx + RTMP + ABR + API ==="
 
-    access_log /var/log/nginx/access.log;
-    error_log  /var/log/nginx/error.log;
+# Backup si ya existe
+[ -f /etc/nginx/nginx.conf ] && \
+  cp /etc/nginx/nginx.conf "/etc/nginx/nginx.conf.bak.$(date +%Y%m%d%H%M%S)"
 
-    gzip on;
+dl "nginx.conf" "/etc/nginx/nginx.conf" 644
 
-    server {
-        listen 80;
-        server_name _;
+# Crear directorios HLS ABR
+for c in cancha1 cancha2 cancha3 cancha4; do
+  mkdir -p "/tmp/hls_abr/$c/720p" "/tmp/hls_abr/$c/480p" "/tmp/hls_abr/$c/360p"
+done
+chmod -R 777 /tmp/hls_abr
 
-        root /var/www/brayanstreams;
-        index index.html;
+# Directorio de logs ffmpeg (www-data necesita escribir aquí)
+mkdir -p /var/log/bs-abr
+chmod 777 /var/log/bs-abr
 
-        location / {
-            try_files $uri $uri/ =404;
-        }
+# stat.xsl para /stats
+mkdir -p "$WEBROOT"
+cp /usr/share/doc/libnginx-mod-rtmp/examples/stat.xsl "$WEBROOT/" 2>/dev/null || true
 
-        location /stream/ {
-            if ($arg_token = "") {
-                return 403;
-            }
-            alias /tmp/hls/;
-            add_header Cache-Control no-cache;
-            add_header Access-Control-Allow-Origin *;
-            types {
-                application/vnd.apple.mpegurl m3u8;
-                video/mp2t ts;
-            }
-        }
+echo "  ✅ nginx.conf instalado (ABR + API)"
 
-        location /proxy/ {
-            if ($arg_token = "") {
-                return 403;
-            }
-            resolver 8.8.8.8 valid=30s;
-            set $upstream $arg_url;
-            proxy_pass $upstream;
-            proxy_hide_header X-Powered-By;
-            proxy_hide_header Server;
-            proxy_set_header Referer "";
-            proxy_set_header Origin "";
-            add_header Access-Control-Allow-Origin *;
-            add_header Cache-Control no-cache;
-        }
+# ═══════════════════════════════════════════════════════════════════════════════
+# 8. DESCARGAR Y CONFIGURAR PÁGINAS WEB
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [8/10] Descargando páginas web ==="
 
-        location /stats {
-            rtmp_stat all;
-            rtmp_stat_stylesheet stat.xsl;
-        }
-    }
+dl "index.html" "$WEBROOT/index.html" 644
+dl "admin.html" "$WEBROOT/admin.html" 644
 
-    server {
-        listen 8080;
-        location /stats {
-            rtmp_stat all;
-        }
-    }
-}
-NGINXCONF
+# Inyectar IP del servidor (el token está desactivado, no se inyecta)
+sed -i "s|http://TU_IP|http://$SERVER_IP|g"  "$WEBROOT/index.html"
+sed -i "s|http://TU_IP|http://$SERVER_IP|g"  "$WEBROOT/admin.html"
 
-# ============================================================
-# 7. DESCARGAR PÁGINAS WEB DESDE GITHUB
-# ============================================================
-echo "=== [7/9] Descargando páginas web ==="
+echo "  ✅ index.html y admin.html listos"
 
-curl -fsSL "https://raw.githubusercontent.com/brayanrojast/streams-rtmp-bash/refs/heads/main/index.html" \
-     -o /var/www/brayanstreams/index.html
+# ═══════════════════════════════════════════════════════════════════════════════
+# 9. CREAR COMANDOS DE GESTIÓN (bs-proxy / bs-stop)
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [9/10] Creando comandos bs-proxy y bs-stop ==="
 
-curl -fsSL "https://raw.githubusercontent.com/brayanrojast/streams-rtmp-bash/refs/heads/main/admin.html" \
-     -o /var/www/brayanstreams/admin.html
-
-# Inyectar IP y token en las páginas automáticamente
-sed -i "s|REEMPLAZAR_CON_TOKEN|$SECRET_TOKEN|g" /var/www/brayanstreams/index.html
-sed -i "s|REEMPLAZAR_CON_TOKEN|$SECRET_TOKEN|g" /var/www/brayanstreams/admin.html
-sed -i "s|http://TU_IP|http://$SERVER_IP|g" /var/www/brayanstreams/index.html
-sed -i "s|http://TU_IP|http://$SERVER_IP|g" /var/www/brayanstreams/admin.html
-
-cp /usr/share/doc/libnginx-mod-rtmp/examples/stat.xsl /var/www/brayanstreams/ 2>/dev/null || true
-
-# ============================================================
-# 8. CREAR COMANDOS DE GESTIÓN
-# ============================================================
-echo "=== [8/9] Creando comandos de gestión ==="
-
-cat << 'PROXYSH' > /usr/local/bin/bs-proxy
+cat > /usr/local/bin/bs-proxy << 'PROXYEOF'
 #!/bin/bash
 CANCHA=$1
 URL=$2
 if [ -z "$CANCHA" ] || [ -z "$URL" ]; then
-    echo "Uso: bs-proxy <cancha1|cancha2|cancha3|cancha4> <url_m3u8>"
-    exit 1
+  echo "Uso: bs-proxy <cancha1|cancha2|cancha3|cancha4> <url_m3u8>"
+  exit 1
 fi
 echo "Iniciando proxy: $URL → rtmp://localhost/live/$CANCHA"
 ffmpeg -re -i "$URL" -c:v copy -c:a copy -f flv "rtmp://localhost/live/$CANCHA" -loglevel warning &
 echo $! > /tmp/bs-$CANCHA.pid
 echo "✅ Stream corriendo en $CANCHA (PID: $!)"
-PROXYSH
+PROXYEOF
 
-cat << 'STOPSH' > /usr/local/bin/bs-stop
+cat > /usr/local/bin/bs-stop << 'STOPEOF'
 #!/bin/bash
 CANCHA=$1
 if [ -f /tmp/bs-$CANCHA.pid ]; then
-    kill $(cat /tmp/bs-$CANCHA.pid) 2>/dev/null
-    rm /tmp/bs-$CANCHA.pid
-    echo "⏹ Stream $CANCHA detenido."
+  kill $(cat /tmp/bs-$CANCHA.pid) 2>/dev/null
+  rm /tmp/bs-$CANCHA.pid
+  echo "⏹ Stream $CANCHA detenido."
 else
-    echo "No hay stream activo en $CANCHA"
+  echo "No hay stream activo en $CANCHA"
 fi
-STOPSH
+STOPEOF
 
-chmod +x /usr/local/bin/bs-proxy
-chmod +x /usr/local/bin/bs-stop
+chmod +x /usr/local/bin/bs-proxy /usr/local/bin/bs-stop
+echo "  ✅ bs-proxy y bs-stop instalados"
 
-# ============================================================
-# 9. INICIAR SERVICIOS
-# ============================================================
-echo "=== [9/9] Iniciando servicios ==="
-nginx -t && systemctl restart nginx
+# ═══════════════════════════════════════════════════════════════════════════════
+# 10. INICIAR / REINICIAR SERVICIOS
+# ═══════════════════════════════════════════════════════════════════════════════
+echo "=== [10/10] Iniciando servicios ==="
+
+# nginx
+nginx -t
 systemctl enable nginx
+systemctl restart nginx
+echo "  ✅ nginx iniciado"
 
-# ============================================================
+# bs-api (Node backend)
+systemctl daemon-reload
+systemctl enable bs-api
+systemctl restart bs-api
+sleep 2
+
+if curl -sf http://127.0.0.1:3001/api/stream/status >/dev/null; then
+  echo "  ✅ bs-api OK en localhost:3001"
+else
+  echo "  ⚠️  bs-api no respondió — revisa: journalctl -u bs-api -n 30"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # RESUMEN FINAL
-# ============================================================
-source /etc/brayanstreams.env
+# ═══════════════════════════════════════════════════════════════════════════════
+source "$ENV_FILE"
 
 echo ""
-echo "=============================================="
-echo "  ✅ BRAYAN STREAMS — INSTALACIÓN COMPLETA"
-echo "=============================================="
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║        ✅  RADIO PATIO TV — INSTALACIÓN COMPLETA        ║"
+echo "╠══════════════════════════════════════════════════════════╣"
+echo "║"
+echo "║  🌐 Página pública:   http://$SERVER_IP"
+echo "║  🔐 Panel admin:      http://$SERVER_IP/admin.html"
+echo "║  📊 Stats RTMP:       http://$SERVER_IP/stats"
+echo "║"
+echo "║  📡 OBS → Settings → Stream:"
+echo "║     Server:  rtmp://$SERVER_IP/live"
+echo "║     Key:     cancha1  (cancha2, cancha3, cancha4)"
+echo "║"
+echo "║  📺 URLs HLS (ABR — 720p/480p/360p auto):"
+echo "║     http://$SERVER_IP/stream/cancha1/master.m3u8"
+echo "║     http://$SERVER_IP/stream/cancha2/master.m3u8"
+echo "║     http://$SERVER_IP/stream/cancha3/master.m3u8"
+echo "║     http://$SERVER_IP/stream/cancha4/master.m3u8"
+echo "║"
+echo "║  🛠️  Comandos útiles:"
+echo "║     bs-utils status          Estado nginx + ffmpeg"
+echo "║     bs-utils logs cancha1    Logs ffmpeg en vivo"
+echo "║     bs-utils restart         Reiniciar nginx"
+echo "║     bs-utils cpu             Monitor de CPU (htop)"
+echo "║     bs-proxy cancha1 <url>   Conectar M3U8 externo"
+echo "║     bs-stop  cancha1         Detener stream"
+echo "║"
+echo "║  🔑 Token (guardado en $ENV_FILE):"
+echo "║     $TOKEN_SECRET"
+echo "║"
+echo "║  ⚠️  SSH ahora en puerto 22022 — reconecta con:"
+echo "║     ssh -p 22022 root@$SERVER_IP"
+echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
-echo "  🌐 Página web:    http://$SERVER_IP"
-echo "  🔐 Admin:         http://$SERVER_IP/admin.html"
-echo "  📡 RTMP (OBS):    rtmp://$SERVER_IP/live/cancha1"
-echo ""
-echo "  🎥 HLS streams:"
-echo "     http://$SERVER_IP/stream/cancha1/index.m3u8?token=$TOKEN_SECRET"
-echo "     http://$SERVER_IP/stream/cancha2/index.m3u8?token=$TOKEN_SECRET"
-echo "     http://$SERVER_IP/stream/cancha3/index.m3u8?token=$TOKEN_SECRET"
-echo "     http://$SERVER_IP/stream/cancha4/index.m3u8?token=$TOKEN_SECRET"
-echo ""
-echo "  📊 Stats:         http://$SERVER_IP/stats"
-echo ""
-echo "  🔑 TOKEN SECRETO:"
-echo "  $TOKEN_SECRET"
-echo ""
-echo "  COMANDOS ÚTILES:"
-echo "  bs-proxy cancha1 https://url-m3u8-externa   ← conectar M3U8 externo"
-echo "  bs-stop  cancha1                             ← detener stream"
-echo ""
-echo "  OBS → Settings → Stream:"
-echo "  Server: rtmp://$SERVER_IP/live"
-echo "  Key:    cancha1  (o cancha2, cancha3, cancha4)"
-echo "=============================================="
