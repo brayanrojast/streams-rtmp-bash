@@ -19,12 +19,46 @@
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
 body { background:var(--black); color:var(--text); font-family:'Inter',sans-serif; font-size:15px; line-height:1.5; min-height:100vh; display:flex; flex-direction:column }
 
+/* ── MAINTENANCE SCREEN ─────────────────────────────────── */
+#maintenance-screen {
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:var(--black); flex-direction:column;
+  align-items:center; justify-content:center; gap:20px; text-align:center; padding:24px;
+}
+#maintenance-screen.active { display:flex }
+.maint-icon { font-size:3rem }
+.maint-title { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:2rem; text-transform:uppercase; color:var(--lime-l) }
+.maint-msg { color:var(--text-dim); max-width:400px; line-height:1.7 }
+
 /* ── HEADER ─────────────────────────────────────────────── */
 header { background:var(--coal); border-bottom:2px solid var(--green); padding:0 24px; display:flex; align-items:center; justify-content:space-between; height:60px; position:sticky; top:0; z-index:200 }
 .logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.6rem; letter-spacing:.04em; text-transform:uppercase }
 .logo .b { color:var(--green) } .logo .s { color:var(--lime-l) }
-.live-badge { display:flex; align-items:center; gap:7px; background:var(--green); color:#fff; font-size:.72rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; padding:5px 12px; border-radius:3px }
-.live-badge::before { content:''; width:7px; height:7px; background:#fff; border-radius:50%; animation:pulse 1.4s ease-in-out infinite }
+
+/* Badge EN VIVO pulsante en header */
+.header-live-badge {
+  display:flex; align-items:center; gap:7px;
+  background:var(--green); color:#fff; font-size:.72rem; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; padding:5px 12px; border-radius:3px;
+  opacity:0; transition:opacity .5s;
+  animation: badge-breathe 2s ease-in-out infinite;
+}
+.header-live-badge.visible { opacity:1 }
+.header-live-badge::before {
+  content:''; width:7px; height:7px; background:#fff; border-radius:50%;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes badge-breathe {
+  0%,100% { box-shadow:0 0 0 0 #16a34a55 }
+  50%      { box-shadow:0 0 0 6px #16a34a00 }
+}
+
+/* Espectadores en header */
+.header-viewers {
+  font-size:.72rem; color:var(--text-dim); display:none; align-items:center; gap:5px;
+}
+.header-viewers.visible { display:flex }
+.viewers-dot { width:6px; height:6px; background:var(--lime-l); border-radius:50%; animation:pulse 1.4s ease-in-out infinite }
 
 /* ── HERO / COUNTDOWN ───────────────────────────────────── */
 .hero { background:linear-gradient(135deg,var(--ember) 0%,var(--black) 60%); border-bottom:1px solid var(--ash); padding:32px 24px 24px; text-align:center }
@@ -37,28 +71,66 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 .cd-num { display:block; font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.8rem; color:var(--green); font-variant-numeric:tabular-nums; line-height:1 }
 .cd-label { display:block; font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); margin-top:4px }
 
+/* ── EVENTO POR CANCHA ──────────────────────────────────── */
+.cancha-event-banner {
+  display:none; background:#0a1400; border:1px solid var(--green-dim);
+  border-radius:5px; padding:10px 14px; margin-bottom:12px;
+  align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+.cancha-event-banner.visible { display:flex }
+.event-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; letter-spacing:.06em; text-transform:uppercase; color:var(--lime-l) }
+.event-msg { font-size:.72rem; color:var(--text-dim); margin-top:3px }
+.event-cd { display:flex; gap:6px; align-items:center }
+.event-cd-part { text-align:center }
+.event-cd-num { display:block; font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.1rem; color:var(--green); font-variant-numeric:tabular-nums; line-height:1 }
+.event-cd-label { display:block; font-size:.55rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted) }
+.event-cd-sep { color:var(--muted); font-size:.9rem; align-self:flex-start; margin-top:2px }
+
 /* ── SECCIÓN STREAMS ─────────────────────────────────────── */
 .streams-section { padding:24px 20px 48px; max-width:1100px; margin:0 auto; width:100% }
 .section-label { font-size:.7rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--lime-l); margin-bottom:18px; display:flex; align-items:center; gap:10px }
 .section-label::after { content:''; flex:1; height:1px; background:var(--ash) }
 
-/* ══════════════════════════════════════════════════════════
-   REPRODUCTOR PERSONALIZADO
-══════════════════════════════════════════════════════════ */
-
-/* ── WRAPPER ─────────────────────────────────────────────── */
+/* ══ REPRODUCTOR ═════════════════════════════════════════════ */
 .rp-player {
   position:relative; width:100%; background:#000;
   border:1px solid var(--ash); border-radius:6px; overflow:hidden;
   user-select:none;
 }
-.rp-player:fullscreen { border-radius:0 }
+.rp-player.theater-mode { position:fixed; inset:0; z-index:500; border-radius:0; border:none }
+.rp-player.theater-mode ~ * { visibility:hidden }
 
-/* ── VIDEO ──────────────────────────────────────────────── */
 .rp-video { width:100%; aspect-ratio:16/9; display:block; background:#000; cursor:pointer }
+.rp-player.theater-mode .rp-video { aspect-ratio:auto; height:100vh; width:100vw }
 .rp-player:fullscreen .rp-video { aspect-ratio:auto; height:100vh; width:100vw }
 
-/* ── OVERLAY (sin señal / cargando) ─────────────────────── */
+/* ── THUMBNAIL / PRÓXIMAMENTE ───────────────────────────── */
+.rp-thumbnail {
+  position:absolute; inset:0; background:#050505;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; transition:opacity .4s;
+}
+.rp-thumbnail.hidden { opacity:0; pointer-events:none }
+.thumbnail-coming {
+  font-family:'Barlow Condensed',sans-serif; font-weight:900;
+  font-size:clamp(1.4rem,4vw,2.2rem); text-transform:uppercase;
+  letter-spacing:.06em; color:var(--lime-l); text-align:center;
+}
+.thumbnail-sub { font-size:.78rem; color:var(--text-dim); text-align:center; max-width:280px }
+.thumbnail-cd {
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:4px;
+}
+.tcd-box { background:var(--coal); border:1px solid var(--ash); border-top:2px solid var(--green); border-radius:5px; padding:8px 12px; min-width:54px; text-align:center }
+.tcd-num { display:block; font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.4rem; color:var(--green); font-variant-numeric:tabular-nums; line-height:1 }
+.tcd-label { display:block; font-size:.52rem; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); margin-top:3px }
+.thumbnail-play-btn {
+  width:52px; height:52px; border:2px solid var(--ash); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); cursor:pointer; transition:border-color .2s, color .2s;
+}
+.thumbnail-play-btn:hover { border-color:var(--lime-l); color:var(--lime-l) }
+
+/* ── OVERLAY ─────────────────────────────────────────────── */
 .rp-overlay {
   position:absolute; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:12px;
@@ -67,28 +139,81 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 .rp-overlay.hidden { opacity:0; pointer-events:none }
 .rp-overlay-icon { width:56px; height:56px; border:1.5px solid var(--ash); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--muted) }
 .rp-overlay-icon svg { width:22px; height:22px }
-.rp-overlay-label { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted) }
+.rp-overlay-label { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); text-align:center; max-width:220px }
+.rp-overlay-sub { font-size:.65rem; color:#444; text-align:center; margin-top:-4px }
 .rp-spinner { width:36px; height:36px; border:2px solid var(--ash); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite }
+
+/* ── ANIMACIÓN INICIO EN VIVO ────────────────────────────── */
+.rp-golive-anim {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; opacity:0;
+}
+.rp-golive-inner {
+  display:flex; align-items:center; gap:10px;
+  background:var(--green); color:#fff;
+  font-family:'Barlow Condensed',sans-serif; font-weight:900;
+  font-size:1.6rem; letter-spacing:.12em; text-transform:uppercase;
+  padding:10px 24px; border-radius:4px;
+}
+.rp-golive-anim.pop { animation: golive-pop .8s ease-out forwards }
+@keyframes golive-pop {
+  0%   { opacity:0; transform:scale(.7) }
+  30%  { opacity:1; transform:scale(1.05) }
+  60%  { opacity:1; transform:scale(1) }
+  100% { opacity:0; transform:scale(1.1) }
+}
 
 /* ── FLASH CENTRAL ──────────────────────────────────────── */
 .rp-flash { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0 }
 .rp-flash-icon { width:60px; height:60px; background:#000a; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff }
 .rp-flash.pop { animation:flash-pop .5s ease-out forwards }
 
-/* ── LIVE BADGE ─────────────────────────────────────────── */
+/* ── LIVE BADGE (en player) ─────────────────────────────── */
 .rp-live-badge {
   position:absolute; top:12px; left:14px;
   display:flex; align-items:center; gap:6px;
   background:var(--green); color:#fff; font-size:.65rem; font-weight:600;
   letter-spacing:.14em; text-transform:uppercase; padding:4px 10px; border-radius:3px;
   opacity:0; transition:opacity .3s;
+  animation: badge-breathe 2s ease-in-out infinite;
 }
 .rp-live-badge.visible { opacity:1 }
 .rp-live-badge::before { content:''; width:6px; height:6px; background:#fff; border-radius:50%; animation:live-pulse 1.4s ease-in-out infinite }
 
+/* ── ESPECTADORES en player ─────────────────────────────── */
+.rp-viewers-badge {
+  position:absolute; top:12px; left:110px;
+  background:#000b; color:var(--lime-l); font-size:.62rem; font-weight:600;
+  padding:4px 8px; border-radius:3px; display:flex; align-items:center; gap:5px;
+  opacity:0; transition:opacity .3s;
+}
+.rp-viewers-badge.visible { opacity:1 }
+.rp-viewers-badge::before { content:''; width:5px; height:5px; background:var(--lime-l); border-radius:50%; animation:pulse 2s ease-in-out infinite }
+
+/* ── CALIDAD CONEXIÓN ───────────────────────────────────── */
+.rp-conn-badge {
+  position:absolute; top:42px; left:14px;
+  background:#000b; font-size:.58rem; font-weight:600;
+  padding:3px 7px; border-radius:3px; letter-spacing:.06em;
+  opacity:0; transition:opacity .3s;
+}
+.rp-conn-badge.visible { opacity:1 }
+.rp-conn-badge.conn-good   { color:#22c55e }
+.rp-conn-badge.conn-mid    { color:#f59e0b }
+.rp-conn-badge.conn-bad    { color:#ef4444 }
+
+/* ── WATCH TIME BADGE ───────────────────────────────────── */
+.rp-watchtime {
+  position:absolute; top:12px; right:14px;
+  background:#000b; color:var(--text-dim); font-size:.62rem; font-weight:500;
+  padding:3px 8px; border-radius:3px; font-variant-numeric:tabular-nums;
+  opacity:0; transition:opacity .3s; pointer-events:none;
+}
+.rp-watchtime.visible { opacity:1 }
+
 /* ── QUALITY BADGE ──────────────────────────────────────── */
 .rp-quality-badge {
-  position:absolute; top:12px; right:14px;
+  position:absolute; top:36px; right:14px;
   background:#000b; color:var(--lime-l); font-size:.65rem; font-weight:600;
   letter-spacing:.1em; padding:4px 8px; border-radius:3px;
   font-family:'Barlow Condensed',sans-serif;
@@ -120,7 +245,6 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 /* ── CTRL ROW ───────────────────────────────────────────── */
 .rp-ctrl-row { display:flex; align-items:center; gap:6px; height:var(--ctrl-h) }
 .rp-spacer { flex:1 }
-
 .rp-btn {
   background:none; border:none; color:var(--text); cursor:pointer;
   padding:6px; border-radius:4px; display:flex; align-items:center; justify-content:center;
@@ -129,6 +253,7 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 .rp-btn:hover { color:var(--lime-l); background:#ffffff10 }
 .rp-btn svg { width:20px; height:20px; display:block }
 .rp-btn.menu-open { color:var(--lime-l); background:#ffffff10 }
+.rp-btn.active-mode { color:var(--lime-l) }
 
 /* ── VOLUME ─────────────────────────────────────────────── */
 .rp-vol-wrap { display:flex; align-items:center; gap:6px }
@@ -158,11 +283,11 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 /* ── TITLE BAR ──────────────────────────────────────────── */
 .rp-title-bar {
   background:var(--coal); border-top:1px solid var(--ash);
-  padding:9px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
 }
 .rp-title-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; letter-spacing:.06em; text-transform:uppercase }
 .rp-title-name span { color:var(--lime-l); margin-right:6px }
-.rp-title-meta { font-size:.7rem; color:var(--text-dim); display:flex; align-items:center; gap:10px }
+.rp-title-meta { font-size:.7rem; color:var(--text-dim); display:flex; align-items:center; gap:10px; flex-wrap:wrap }
 .rp-title-meta .sep { color:var(--ash) }
 
 /* ── CANCHA TABS ─────────────────────────────────────────── */
@@ -191,6 +316,7 @@ header { background:var(--coal); border-bottom:2px solid var(--green); padding:0
 @keyframes spin        { to{transform:rotate(360deg)} }
 @keyframes flash-pop   { 0%{opacity:1;transform:scale(.8)} 40%{opacity:1;transform:scale(1.1)} 100%{opacity:0;transform:scale(1.2)} }
 @keyframes keyhint-pop { 0%{opacity:1;transform:translate(-50%,-50%) scale(.95)} 30%{opacity:1;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-60%)} }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important } }
 
 /* ── FOOTER ─────────────────────────────────────────────── */
 footer { border-top:1px solid var(--ash); padding:18px 24px; text-align:center; color:var(--text-dim); font-size:.75rem; letter-spacing:.05em; margin-top:auto }
@@ -203,23 +329,37 @@ footer strong { color:var(--green) }
   .rp-vol-slider { width:52px }
   .rp-time { font-size:.65rem }
   .rp-cancha-tab { font-size:.8rem; padding:9px 4px }
+  .rp-viewers-badge { left:100px }
 }
 </style>
 </head>
 <body>
 
+<!-- ══ MAINTENANCE ═══════════════════════════════════════════ -->
+<div id="maintenance-screen">
+  <div class="maint-icon">🔧</div>
+  <div class="maint-title">Sistema en mantenimiento</div>
+  <div class="maint-msg" id="maint-msg">Estamos trabajando para mejorar tu experiencia. Volvemos pronto.</div>
+</div>
+
 <!-- ══ HEADER ══════════════════════════════════════════════ -->
 <header>
   <div class="logo"><span class="b">Radio Patio</span> <span class="s">TV</span></div>
-  <div class="live-badge">En vivo</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="header-viewers" id="header-viewers">
+      <span class="viewers-dot"></span>
+      <span id="header-viewers-count">0</span> viendo
+    </div>
+    <div class="header-live-badge" id="header-live-badge">En vivo</div>
+  </div>
 </header>
 
 <!-- ══ HERO ════════════════════════════════════════════════ -->
 <div class="hero">
   <h1 class="hero-title">Radio Patio <em>TV</em></h1>
-  <p class="hero-sub">Parchate que Fary renunciará jajaja 😂</p>
-  <div class="countdown-caption">Fary renuncia en</div>
-  <div class="countdown">
+  <p class="hero-sub" id="hero-sub">Streaming en vivo de canchas deportivas</p>
+  <div class="countdown-caption" id="global-cd-caption" style="display:none"></div>
+  <div class="countdown" id="global-cd" style="display:none">
     <div class="cd-box"><span class="cd-num" id="cd-days">00</span><span class="cd-label">Días</span></div>
     <div class="cd-box"><span class="cd-num" id="cd-hours">00</span><span class="cd-label">Horas</span></div>
     <div class="cd-box"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Min</span></div>
@@ -231,23 +371,62 @@ footer strong { color:var(--green) }
 <section class="streams-section">
   <div class="section-label">Canchas activas</div>
 
+  <!-- Banner de evento por cancha -->
+  <div class="cancha-event-banner" id="cancha-event-banner">
+    <div>
+      <div style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px">Próximo evento</div>
+      <div class="event-name" id="event-name-display">—</div>
+      <div class="event-msg" id="event-msg-display"></div>
+    </div>
+    <div class="event-cd" id="event-cd">
+      <div class="event-cd-part"><span class="event-cd-num" id="ecd-d">00</span><span class="event-cd-label">d</span></div>
+      <span class="event-cd-sep">:</span>
+      <div class="event-cd-part"><span class="event-cd-num" id="ecd-h">00</span><span class="event-cd-label">h</span></div>
+      <span class="event-cd-sep">:</span>
+      <div class="event-cd-part"><span class="event-cd-num" id="ecd-m">00</span><span class="event-cd-label">m</span></div>
+      <span class="event-cd-sep">:</span>
+      <div class="event-cd-part"><span class="event-cd-num" id="ecd-s">00</span><span class="event-cd-label">s</span></div>
+    </div>
+  </div>
+
   <!-- REPRODUCTOR -->
   <div class="rp-player" id="rp">
 
     <video class="rp-video" id="rp-video" playsinline></video>
 
+    <!-- Thumbnail / Próximamente (visible antes de dar play) -->
+    <div class="rp-thumbnail" id="rp-thumbnail">
+      <div class="thumbnail-coming" id="thumb-title">Próximamente</div>
+      <div class="thumbnail-sub" id="thumb-sub">El stream comenzará pronto</div>
+      <div class="thumbnail-cd" id="thumb-cd" style="display:none">
+        <div class="tcd-box"><span class="tcd-num" id="tcd-d">00</span><span class="tcd-label">Días</span></div>
+        <div class="tcd-box"><span class="tcd-num" id="tcd-h">00</span><span class="tcd-label">Horas</span></div>
+        <div class="tcd-box"><span class="tcd-num" id="tcd-m">00</span><span class="tcd-label">Min</span></div>
+        <div class="tcd-box"><span class="tcd-num" id="tcd-s">00</span><span class="tcd-label">Seg</span></div>
+      </div>
+      <div class="thumbnail-play-btn" onclick="tryPlay()" title="Intentar reproducir">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+    </div>
+
     <!-- Sin señal -->
-    <div class="rp-overlay" id="rp-overlay">
+    <div class="rp-overlay hidden" id="rp-overlay">
       <div class="rp-overlay-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       </div>
-      <div class="rp-overlay-label">Sin señal</div>
+      <div class="rp-overlay-label" id="rp-offline-msg">Sin señal</div>
+      <div class="rp-overlay-sub" id="rp-overlay-sub"></div>
     </div>
 
     <!-- Cargando -->
     <div class="rp-overlay hidden" id="rp-loading">
       <div class="rp-spinner"></div>
       <div class="rp-overlay-label">Conectando...</div>
+    </div>
+
+    <!-- Animación GO LIVE -->
+    <div class="rp-golive-anim" id="rp-golive">
+      <span>🔴</span> <span>En Vivo</span>
     </div>
 
     <!-- Flash play/pause -->
@@ -260,8 +439,17 @@ footer strong { color:var(--green) }
     <!-- Hint de teclado -->
     <div class="rp-keyhint" id="rp-keyhint"></div>
 
-    <!-- Live badge -->
+    <!-- Live badge (player) -->
     <div class="rp-live-badge" id="rp-live-badge">En vivo</div>
+
+    <!-- Espectadores (player) -->
+    <div class="rp-viewers-badge" id="rp-viewers-badge">0</div>
+
+    <!-- Calidad de conexión -->
+    <div class="rp-conn-badge" id="rp-conn-badge">—</div>
+
+    <!-- Watch time badge -->
+    <div class="rp-watchtime" id="rp-watchtime">0:00 viendo</div>
 
     <!-- Quality badge -->
     <div class="rp-quality-badge" id="rp-quality-badge">AUTO</div>
@@ -278,14 +466,14 @@ footer strong { color:var(--green) }
       <div class="rp-ctrl-row">
 
         <!-- Play/Pause -->
-        <button class="rp-btn" id="btn-play" title="Reproducir / Pausar  (Espacio)">
+        <button class="rp-btn" id="btn-play" title="Reproducir / Pausar (Espacio)">
           <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
         </button>
 
         <!-- Volumen -->
         <div class="rp-vol-wrap">
-          <button class="rp-btn" id="btn-mute" title="Silenciar  (M)">
+          <button class="rp-btn" id="btn-mute" title="Silenciar (M)">
             <svg id="icon-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
@@ -312,6 +500,14 @@ footer strong { color:var(--green) }
           </svg>
         </button>
 
+        <!-- Teatro -->
+        <button class="rp-btn" id="btn-theater" title="Modo teatro (T)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <line x1="2" y1="9" x2="22" y2="9"/>
+          </svg>
+        </button>
+
         <!-- Compartir -->
         <button class="rp-btn" id="btn-share" title="Compartir">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -321,15 +517,15 @@ footer strong { color:var(--green) }
           </svg>
         </button>
 
-        <!-- PiP (aparece solo si el navegador lo soporta) -->
+        <!-- PiP -->
         <button class="rp-btn" id="btn-pip" title="Picture in Picture" style="display:none">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="10" width="9" height="6" rx="1"/>
           </svg>
         </button>
 
-        <!-- Pantalla completa -->
-        <button class="rp-btn" id="btn-fs" title="Pantalla completa  (F)">
+        <!-- Fullscreen directo -->
+        <button class="rp-btn" id="btn-fs" title="Pantalla completa (F)">
           <svg id="icon-fs-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
             <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
@@ -340,17 +536,19 @@ footer strong { color:var(--green) }
           </svg>
         </button>
 
-      </div><!-- /ctrl-row -->
-    </div><!-- /controls -->
+      </div>
+    </div>
   </div><!-- /rp-player -->
 
-  <!-- Barra de info debajo del video -->
+  <!-- Barra de info -->
   <div class="rp-title-bar">
     <div class="rp-title-name" id="rp-title"><span>#1</span>Cancha 1</div>
     <div class="rp-title-meta">
       <span id="meta-quality" style="color:var(--lime-l)">AUTO</span>
       <span class="sep">·</span>
       <span id="meta-viewers">—</span>
+      <span class="sep">·</span>
+      <span id="meta-conn" style="font-size:.68rem">—</span>
     </div>
   </div>
 
@@ -361,7 +559,7 @@ footer strong { color:var(--green) }
 
 <footer><strong>Radio Patio TV</strong> &mdash; Todos los derechos reservados</footer>
 
-<!-- Toast compartir -->
+<!-- Toast -->
 <div class="rp-toast" id="rp-toast"></div>
 
 <script>
@@ -370,31 +568,126 @@ footer strong { color:var(--green) }
 // ══════════════════════════════════════════════════════════
 const SERVER = window.location.hostname === 'localhost' ? 'http://TU_IP' : '';
 
-const CANCHAS = [
-  { id:1, nombre:'Cancha 1' },
-  { id:2, nombre:'Cancha 2' },
-  { id:3, nombre:'Cancha 3' },
-  { id:4, nombre:'Cancha 4' },
-];
+// ── MODO MANTENIMIENTO ─────────────────────────────────────
+async function checkMaintenance() {
+  try {
+    const r = await fetch(`${SERVER}/api/maintenance`);
+    const d = await r.json();
+    if (d.enabled) {
+      document.getElementById('maint-msg').textContent = d.mensaje || 'Sistema en mantenimiento. Volvemos pronto.';
+      document.getElementById('maintenance-screen').classList.add('active');
+    }
+  } catch {}
+}
+checkMaintenance();
 
-const hlsUrl = id => `${SERVER}/stream/cancha${id}/master.m3u8`;
+// Mensaje offline
+function getOfflineMsg() {
+  const meta = document.querySelector('meta[name="bs-offline-msg"]');
+  return localStorage.getItem('bs-offline-msg') || (meta ? meta.content : 'Sin señal — el stream comenzará pronto');
+}
+document.getElementById('rp-offline-msg').textContent = getOfflineMsg();
+
+// ── CANCHAS ────────────────────────────────────────────────
+function getCanchas() {
+  try {
+    const raw = localStorage.getItem('bs-canchas');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [
+    { id:1, nombre:'Cancha 1' }, { id:2, nombre:'Cancha 2' },
+    { id:3, nombre:'Cancha 3' }, { id:4, nombre:'Cancha 4' },
+  ];
+}
+
+// ── EVENTOS (API primero, localStorage fallback) ────────────
+let eventsCache = {};
+async function fetchEvents() {
+  try {
+    const r = await fetch(`${SERVER}/api/events`);
+    if (r.ok) eventsCache = await r.json();
+  } catch {
+    // fallback localStorage
+    try {
+      const raw = localStorage.getItem('bs-global-event');
+      if (raw) eventsCache['__global__'] = JSON.parse(raw);
+    } catch {}
+    getCanchas().forEach(c => {
+      try {
+        const raw = localStorage.getItem(`bs-event-cancha${c.id}`);
+        if (raw) eventsCache[`cancha${c.id}`] = JSON.parse(raw);
+      } catch {}
+    });
+  }
+}
+
+function getEventForKey(key) {
+  const ev = eventsCache[key];
+  if (!ev || !ev.fecha) return null;
+  if (new Date(ev.fecha) <= new Date()) return null;
+  return ev;
+}
+
+// ── CONTADOR GLOBAL HERO ───────────────────────────────────
+function loadGlobalCountdown() {
+  const ev = eventsCache['__global__'] || null;
+  if (!ev || !ev.fecha) return;
+  document.getElementById('global-cd-caption').style.display = 'block';
+  document.getElementById('global-cd-caption').textContent = ev.nombre || 'Próximo evento';
+  document.getElementById('global-cd').style.display = 'flex';
+  // también actualizar hero-sub con mensaje personalizado
+  if (ev.mensaje) document.getElementById('hero-sub').textContent = ev.mensaje;
+  window._globalEventDate = new Date(ev.fecha);
+}
+
+function updateGlobalCountdown() {
+  if (!window._globalEventDate) return;
+  const diff = Math.max(0, window._globalEventDate - new Date());
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff / 3600000) % 24);
+  const m = Math.floor((diff / 60000) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+  document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+  document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+  if (diff === 0) {
+    document.getElementById('global-cd').style.display = 'none';
+    document.getElementById('global-cd-caption').style.display = 'none';
+  }
+}
 
 // ══════════════════════════════════════════════════════════
 // ESTADO
 // ══════════════════════════════════════════════════════════
-let currentCancha = 1;
+let CANCHAS = getCanchas();
+let currentCancha = CANCHAS[0]?.id || 1;
 let hls = null;
 let isLive = false;
 let qualMenuOpen = false;
 let toastTimer = null;
+let theaterMode = false;
+let watchStart = null;
+let watchTimer = null;
+let reconnectTimer = null;
+let reconnectAttempt = 0;
+let connCheckTimer = null;
+let wasLive = false;
+const MAX_RECONNECT_DELAY = 60;
+
+const hlsUrl = id => `${SERVER}/stream/cancha${id}/master.m3u8`;
 
 // refs DOM
 const video      = document.getElementById('rp-video');
 const overlay    = document.getElementById('rp-overlay');
 const loading    = document.getElementById('rp-loading');
+const thumbnail  = document.getElementById('rp-thumbnail');
 const flash      = document.getElementById('rp-flash');
 const flashIc    = document.getElementById('rp-flash-icon');
 const liveBadge  = document.getElementById('rp-live-badge');
+const viewBadge  = document.getElementById('rp-viewers-badge');
+const connBadge  = document.getElementById('rp-conn-badge');
+const watchBadge = document.getElementById('rp-watchtime');
 const qualBadge  = document.getElementById('rp-quality-badge');
 const qualMenu   = document.getElementById('rp-quality-menu');
 const progWrap   = document.getElementById('rp-prog-wrap');
@@ -403,16 +696,22 @@ const progThumb  = document.getElementById('rp-prog-thumb');
 const timeEl     = document.getElementById('rp-time');
 const metaQ      = document.getElementById('meta-quality');
 const metaV      = document.getElementById('meta-viewers');
+const metaConn   = document.getElementById('meta-conn');
 const toast      = document.getElementById('rp-toast');
 const keyhint    = document.getElementById('rp-keyhint');
 const titleEl    = document.getElementById('rp-title');
 const player     = document.getElementById('rp');
 const volSlider  = document.getElementById('vol-slider');
+const goLiveEl   = document.getElementById('rp-golive');
+const headerLive = document.getElementById('header-live-badge');
+const headerView = document.getElementById('header-viewers');
+const headerViewCount = document.getElementById('header-viewers-count');
 
 // ══════════════════════════════════════════════════════════
-// TABS
+// TABS dinámicos
 // ══════════════════════════════════════════════════════════
 function buildTabs() {
+  CANCHAS = getCanchas();
   const bar = document.getElementById('rp-tabs');
   bar.innerHTML = '';
   CANCHAS.forEach(c => {
@@ -431,14 +730,127 @@ function switchCancha(id) {
   const tab = document.getElementById(`tab-${id}`);
   if (tab) tab.classList.add('active');
   const c = CANCHAS.find(x => x.id === id);
-  titleEl.innerHTML = `<span>#${id}</span>${c.nombre}`;
+  titleEl.innerHTML = `<span>#${id}</span>${c ? c.nombre : 'Cancha ' + id}`;
+  loadEventBanner(id);
+  loadThumbnail(id);
   loadStream(hlsUrl(id));
 }
 
 // ══════════════════════════════════════════════════════════
-// CARGAR STREAM
+// THUMBNAIL / PRÓXIMAMENTE
+// ══════════════════════════════════════════════════════════
+let thumbCdInterval = null;
+
+function loadThumbnail(id) {
+  clearInterval(thumbCdInterval);
+  const ev = getEventForKey(`cancha${id}`);
+  const thumbTitle = document.getElementById('thumb-title');
+  const thumbSub   = document.getElementById('thumb-sub');
+  const thumbCd    = document.getElementById('thumb-cd');
+
+  if (ev) {
+    thumbTitle.textContent = ev.nombre || 'Próximamente';
+    thumbSub.textContent   = ev.mensaje || 'El stream comenzará pronto';
+    thumbCd.style.display = 'flex';
+    tickThumbCd(new Date(ev.fecha));
+    thumbCdInterval = setInterval(() => tickThumbCd(new Date(ev.fecha)), 1000);
+  } else {
+    thumbTitle.textContent = 'Próximamente';
+    thumbSub.textContent   = getOfflineMsg();
+    thumbCd.style.display = 'none';
+  }
+}
+
+function tickThumbCd(target) {
+  const diff = Math.max(0, target - Date.now());
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff / 3600000) % 24);
+  const m = Math.floor((diff / 60000) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById('tcd-d').textContent = String(d).padStart(2,'0');
+  document.getElementById('tcd-h').textContent = String(h).padStart(2,'0');
+  document.getElementById('tcd-m').textContent = String(m).padStart(2,'0');
+  document.getElementById('tcd-s').textContent = String(s).padStart(2,'0');
+}
+
+function tryPlay() {
+  thumbnail.classList.add('hidden');
+  loadStream(hlsUrl(currentCancha));
+}
+
+// ══════════════════════════════════════════════════════════
+// EVENTO POR CANCHA (banner)
+// ══════════════════════════════════════════════════════════
+let eventCdInterval = null;
+
+function loadEventBanner(id) {
+  clearInterval(eventCdInterval);
+  const banner = document.getElementById('cancha-event-banner');
+  const ev = getEventForKey(`cancha${id}`);
+  if (!ev) { banner.classList.remove('visible'); return; }
+  document.getElementById('event-name-display').textContent = ev.nombre || 'Próximo evento';
+  document.getElementById('event-msg-display').textContent = ev.mensaje || '';
+  banner.classList.add('visible');
+  tickEventCd(new Date(ev.fecha));
+  eventCdInterval = setInterval(() => tickEventCd(new Date(ev.fecha)), 1000);
+}
+
+function tickEventCd(target) {
+  const diff = Math.max(0, target - Date.now());
+  if (diff === 0) { document.getElementById('cancha-event-banner').classList.remove('visible'); clearInterval(eventCdInterval); return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff / 3600000) % 24);
+  const m = Math.floor((diff / 60000) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById('ecd-d').textContent = String(d).padStart(2,'0');
+  document.getElementById('ecd-h').textContent = String(h).padStart(2,'0');
+  document.getElementById('ecd-m').textContent = String(m).padStart(2,'0');
+  document.getElementById('ecd-s').textContent = String(s).padStart(2,'0');
+}
+
+// ══════════════════════════════════════════════════════════
+// CALIDAD DE CONEXIÓN
+// ══════════════════════════════════════════════════════════
+let connSamples = [];
+let lastSegLoad = 0;
+
+function startConnMonitor() {
+  clearInterval(connCheckTimer);
+  if (!hls) return;
+  hls.on(Hls.Events.FRAG_LOADED, (e, data) => {
+    const ms = data.stats.loading.end - data.stats.loading.start;
+    connSamples.push(ms);
+    if (connSamples.length > 5) connSamples.shift();
+    updateConnBadge();
+  });
+}
+
+function updateConnBadge() {
+  if (!connSamples.length || !isLive) { connBadge.classList.remove('visible'); return; }
+  const avg = connSamples.reduce((a,b)=>a+b,0) / connSamples.length;
+  connBadge.classList.add('visible');
+  connBadge.classList.remove('conn-good','conn-mid','conn-bad');
+  let label, cls;
+  if (avg < 800)      { label = '● Excelente'; cls = 'conn-good'; }
+  else if (avg < 2000){ label = '● Regular';   cls = 'conn-mid'; }
+  else                { label = '● Débil';      cls = 'conn-bad'; }
+  connBadge.textContent = label;
+  connBadge.classList.add(cls);
+  metaConn.textContent = label;
+  metaConn.style.color = cls === 'conn-good' ? '#22c55e' : cls === 'conn-mid' ? '#f59e0b' : '#ef4444';
+}
+
+// ══════════════════════════════════════════════════════════
+// CARGAR STREAM con reconexión backoff
 // ══════════════════════════════════════════════════════════
 function loadStream(url) {
+  clearTimeout(reconnectTimer);
+  reconnectAttempt = 0;
+  wasLive = false;
+  _loadStream(url);
+}
+
+function _loadStream(url) {
   if (hls) { hls.destroy(); hls = null; }
   video.pause();
   video.removeAttribute('src');
@@ -448,10 +860,14 @@ function loadStream(url) {
   qualMenuOpen = false;
   liveBadge.classList.remove('visible');
   qualBadge.classList.remove('visible');
+  viewBadge.classList.remove('visible');
+  connBadge.classList.remove('visible');
   qualMenu.innerHTML = '';
+  stopWatchTimer();
+  connSamples = [];
 
   if (Hls.isSupported()) {
-    hls = new Hls({ lowLatencyMode:true, manifestLoadingMaxRetry:999, manifestLoadingRetryDelay:3000, levelLoadingMaxRetry:999 });
+    hls = new Hls({ lowLatencyMode:true, manifestLoadingMaxRetry:3, manifestLoadingRetryDelay:2000, levelLoadingMaxRetry:3 });
     hls.loadSource(url);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => {
@@ -459,16 +875,37 @@ function loadStream(url) {
       buildQualityMenu(data.levels);
       video.play().catch(() => {});
       updateQualBadge();
+      reconnectAttempt = 0;
+      startConnMonitor();
     });
     hls.on(Hls.Events.LEVEL_SWITCHED, () => updateQualBadge());
-    hls.on(Hls.Events.ERROR, (e, data) => { if (data.fatal) setOverlay('offline'); });
+    hls.on(Hls.Events.ERROR, (e, data) => {
+      if (data.fatal) scheduleReconnect(url);
+    });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url;
     video.addEventListener('loadedmetadata', () => { setOverlay('live'); video.play().catch(() => {}); }, { once:true });
-    video.addEventListener('error', () => setOverlay('offline'), { once:true });
+    video.addEventListener('error', () => scheduleReconnect(url), { once:true });
   } else {
     setOverlay('offline');
   }
+}
+
+function scheduleReconnect(url) {
+  reconnectAttempt++;
+  const delay = Math.min(10 * Math.pow(2, reconnectAttempt - 1), MAX_RECONNECT_DELAY);
+  let remaining = delay;
+  setOverlay('offline');
+  connBadge.classList.remove('visible');
+
+  const sub = document.getElementById('rp-overlay-sub');
+  const tick = () => {
+    if (remaining <= 0) { sub.textContent = ''; _loadStream(url); return; }
+    sub.textContent = `Reconectando en ${remaining}s...`;
+    remaining--;
+    reconnectTimer = setTimeout(tick, 1000);
+  };
+  tick();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -479,27 +916,81 @@ function setOverlay(state) {
   loading.classList.add('hidden');
   isLive = false;
   liveBadge.classList.remove('visible');
+  watchBadge.classList.remove('visible');
+  document.getElementById('rp-overlay-sub').textContent = '';
+
   if (state === 'live') {
+    thumbnail.classList.add('hidden');
     isLive = true;
     liveBadge.classList.add('visible');
     qualBadge.classList.add('visible');
+    viewBadge.classList.add('visible');
+    headerLive.classList.add('visible');
+    headerView.classList.add('visible');
+    startWatchTimer();
+    // Animación GO LIVE solo la primera vez que conecta
+    if (!wasLive) {
+      wasLive = true;
+      triggerGoLiveAnim();
+    }
   } else if (state === 'loading') {
     loading.classList.remove('hidden');
+    headerLive.classList.remove('visible');
+    headerView.classList.remove('visible');
   } else {
     overlay.classList.remove('hidden');
+    document.getElementById('rp-offline-msg').textContent = getOfflineMsg();
+    headerLive.classList.remove('visible');
+    headerView.classList.remove('visible');
+    // Mostrar thumbnail nuevamente
+    thumbnail.classList.remove('hidden');
+    loadThumbnail(currentCancha);
   }
 }
 
 // ══════════════════════════════════════════════════════════
-// CALIDAD
+// ANIMACIÓN GO LIVE
+// ══════════════════════════════════════════════════════════
+function triggerGoLiveAnim() {
+  goLiveEl.classList.remove('pop');
+  void goLiveEl.offsetWidth;
+  goLiveEl.classList.add('pop');
+}
+
+// ══════════════════════════════════════════════════════════
+// WATCH TIME
+// ══════════════════════════════════════════════════════════
+function startWatchTimer() {
+  if (watchTimer) return;
+  watchStart = watchStart || Date.now();
+  watchBadge.classList.add('visible');
+  watchTimer = setInterval(() => {
+    const secs = Math.floor((Date.now() - watchStart) / 1000);
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    watchBadge.textContent = `${m}:${String(s).padStart(2,'0')} viendo`;
+  }, 1000);
+}
+
+function stopWatchTimer() {
+  clearInterval(watchTimer);
+  watchTimer = null;
+  watchStart = null;
+  watchBadge.classList.remove('visible');
+}
+
+// ══════════════════════════════════════════════════════════
+// CALIDAD — muestra todas las resoluciones disponibles
 // ══════════════════════════════════════════════════════════
 function buildQualityMenu(levels) {
-  if (!levels || levels.length <= 1) return;
   qualMenu.innerHTML = '';
+  if (!levels || levels.length === 0) return;
+
   const auto = document.createElement('button');
   auto.textContent = 'Auto'; auto.className = 'active'; auto.dataset.level = -1;
   auto.onclick = () => setQuality(-1);
   qualMenu.appendChild(auto);
+
   levels.forEach((l, i) => {
     const btn = document.createElement('button');
     btn.textContent = l.height ? `${l.height}p` : `${Math.round(l.bitrate/1000)}k`;
@@ -534,9 +1025,9 @@ function updateQualBadge() {
 // ══════════════════════════════════════════════════════════
 // CONTROLES
 // ══════════════════════════════════════════════════════════
-// Play / Pause
 document.getElementById('btn-play').onclick = togglePlay;
 video.onclick = () => { togglePlay(); showFlash(video.paused); };
+video.addEventListener('dblclick', toggleFS);
 
 function togglePlay() {
   video.paused ? video.play().catch(() => {}) : video.pause();
@@ -598,7 +1089,7 @@ function fmtTime(s) {
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
 }
 
-// Calidad menu toggle
+// Calidad
 document.getElementById('btn-quality').onclick = () => {
   qualMenuOpen = !qualMenuOpen;
   qualMenu.classList.toggle('open', qualMenuOpen);
@@ -611,15 +1102,23 @@ document.addEventListener('click', e => {
   }
 });
 
+// Teatro
+document.getElementById('btn-theater').onclick = toggleTheater;
+function toggleTheater() {
+  theaterMode = !theaterMode;
+  player.classList.toggle('theater-mode', theaterMode);
+  document.getElementById('btn-theater').classList.toggle('active-mode', theaterMode);
+  document.body.style.overflow = theaterMode ? 'hidden' : '';
+  if (theaterMode) showKeyHint('Modo teatro — Esc para salir');
+}
+
 // Compartir
 document.getElementById('btn-share').onclick = () => {
   const url = `${window.location.origin}/stream/cancha${currentCancha}/master.m3u8`;
   if (navigator.share) {
     navigator.share({ title:`Radio Patio TV — Cancha ${currentCancha}`, url:window.location.href });
   } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => showToast('✓ URL copiada al portapapeles'));
-  } else {
-    showToast('URL: ' + url);
+    navigator.clipboard.writeText(url).then(() => showToast('✓ URL copiada'));
   }
 };
 
@@ -634,7 +1133,7 @@ if ('pictureInPictureEnabled' in document) {
   };
 }
 
-// Fullscreen
+// Fullscreen directo
 document.getElementById('btn-fs').onclick = toggleFS;
 function toggleFS() {
   document.fullscreenElement ? document.exitFullscreen() : player.requestFullscreen().catch(() => {});
@@ -650,18 +1149,22 @@ document.addEventListener('fullscreenchange', () => {
 // ══════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.key === 'Escape' && theaterMode) { toggleTheater(); return; }
   if (e.key === ' ' || e.key === 'k') {
     e.preventDefault(); togglePlay(); showKeyHint(video.paused ? 'Pausado' : 'Reproduciendo');
   } else if (e.key === 'm' || e.key === 'M') {
     video.muted = !video.muted; updateVolIcon(); showKeyHint(video.muted ? 'Silenciado' : 'Audio activado');
   } else if (e.key === 'f' || e.key === 'F') {
     toggleFS(); showKeyHint('Pantalla completa');
+  } else if (e.key === 't' || e.key === 'T') {
+    toggleTheater(); showKeyHint(theaterMode ? 'Modo teatro' : 'Vista normal');
   } else if (e.key === 'ArrowUp') {
     e.preventDefault(); video.volume = Math.min(1, video.volume + 0.1); volSlider.value = video.volume; updateVolIcon(); showKeyHint(`Volumen ${Math.round(video.volume*100)}%`);
   } else if (e.key === 'ArrowDown') {
     e.preventDefault(); video.volume = Math.max(0, video.volume - 0.1); volSlider.value = video.volume; updateVolIcon(); showKeyHint(`Volumen ${Math.round(video.volume*100)}%`);
-  } else if (e.key >= '1' && e.key <= '4') {
-    switchCancha(parseInt(e.key)); showKeyHint(`Cancha ${e.key}`);
+  } else {
+    const idx = parseInt(e.key) - 1;
+    if (idx >= 0 && idx < CANCHAS.length) { switchCancha(CANCHAS[idx].id); showKeyHint(`Cancha ${CANCHAS[idx].nombre}`); }
   }
 });
 
@@ -680,8 +1183,10 @@ function showToast(msg) {
 }
 
 // ══════════════════════════════════════════════════════════
-// STATS (polling /stats de nginx-rtmp para dots de canchas)
+// STATS — espectadores e indicadores de canchas
 // ══════════════════════════════════════════════════════════
+let totalViewers = 0;
+
 function fetchStats() {
   fetch(`${SERVER}/stats`).then(r => r.text()).then(xml => {
     xml.split('<stream>').slice(1).forEach(block => {
@@ -691,37 +1196,42 @@ function fetchStats() {
       const id  = parseInt(name.replace('cancha',''));
       const tab = document.getElementById(`tab-${id}`);
       if (tab) tab.classList.toggle('live-tab', nc > 0);
-      if (id === currentCancha) metaV.textContent = Math.max(0, nc - 1) + ' espectadores';
+      if (id === currentCancha) {
+        const viewers = Math.max(0, nc - 1);
+        metaV.textContent = viewers + ' espectadores';
+        viewBadge.textContent = viewers;
+        headerViewCount.textContent = viewers;
+      }
     });
   }).catch(() => {});
 }
 
 // ══════════════════════════════════════════════════════════
-// CONTADOR — 30 del mes en curso a las 12:00 am
-// ══════════════════════════════════════════════════════════
-function updateCountdown() {
-  const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), 30, 0, 0, 0);
-  let diff = Math.max(0, target - now);
-  const d = Math.floor(diff / (1000*60*60*24));
-  const h = Math.floor((diff / (1000*60*60)) % 24);
-  const m = Math.floor((diff / (1000*60)) % 60);
-  const s = Math.floor((diff / 1000) % 60);
-  document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
-  document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
-  document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
-  document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
-}
-updateCountdown();
-setInterval(updateCountdown, 1000);
-
-// ══════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════
-buildTabs();
-loadStream(hlsUrl(currentCancha));
-fetchStats();
-setInterval(fetchStats, 5000);
+async function init() {
+  await fetchEvents();
+  loadGlobalCountdown();
+  updateGlobalCountdown();
+  setInterval(updateGlobalCountdown, 1000);
+
+  buildTabs();
+  loadThumbnail(currentCancha);
+  loadEventBanner(currentCancha);
+  loadStream(hlsUrl(currentCancha));
+  fetchStats();
+  setInterval(fetchStats, 5000);
+}
+
+init();
+
+// Storage sync (pestaña admin)
+window.addEventListener('storage', e => {
+  if (e.key === 'bs-canchas') { buildTabs(); }
+  if (e.key === 'bs-offline-msg') { document.getElementById('rp-offline-msg').textContent = getOfflineMsg(); }
+  if (e.key && e.key.startsWith('bs-event')) { fetchEvents().then(() => { loadEventBanner(currentCancha); loadThumbnail(currentCancha); }); }
+  if (e.key === 'bs-global-event') { fetchEvents().then(() => loadGlobalCountdown()); }
+});
 </script>
 </body>
 </html>

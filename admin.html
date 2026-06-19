@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,117 +7,278 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <style>
-  :root{
-    --black:#0a0a0a;--coal:#141414;--panel:#181818;
-    --red:#c0202a;--red-dim:#7a1218;
-    --lime:#84cc16;--lime-l:#a3e635;
-    --green:#22c55e;--green-dim:#166534;
-    --ash:#2a2a2a;--ash2:#1e1e1e;--muted:#555;
-    --text:#e8e2d8;--text-dim:#888;
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+:root {
+  --black:#0a0a0a; --coal:#141414; --panel:#181818;
+  --red:#c0202a;   --red-dim:#7a1218;
+  --lime:#84cc16;  --lime-l:#a3e635;
+  --green:#22c55e; --green-dim:#166534;
+  --ash:#2a2a2a;   --ash2:#1e1e1e; --muted:#555;
+  --text:#e8e2d8;  --text-dim:#888;
+  --orange:#f59e0b;
+}
+[data-theme="light"] {
+  --black:#f5f5f0; --coal:#e8e8e3; --panel:#f0f0eb;
+  --ash:#d0d0c8;   --ash2:#dcdcd6; --muted:#aaa;
+  --text:#1a1a18;  --text-dim:#5a5a58;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+body { background:var(--black); color:var(--text); font-family:'Inter',sans-serif; font-size:14px; min-height:100vh }
 
-  /* LOGIN */
-  #login-screen{position:fixed;inset:0;background:var(--black);display:flex;align-items:center;justify-content:center;z-index:999}
-  .login-box{background:var(--coal);border:1px solid var(--ash);border-top:3px solid var(--green);border-radius:6px;padding:36px 32px;width:100%;max-width:360px}
-  .login-box h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-  .login-box .slogan{font-size:.74rem;color:var(--lime-l);margin-bottom:18px}
-  .login-box p{font-size:.8rem;color:var(--text-dim);margin-bottom:24px}
-  .field{margin-bottom:12px}
-  .field input{width:100%;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.9rem;padding:10px 14px;outline:none;font-family:'Inter',sans-serif}
-  .field input:focus{border-color:var(--lime)}
-  .login-box button{width:100%;background:var(--green);border:none;color:#fff;font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:11px;border-radius:4px;cursor:pointer;margin-top:4px}
-  .login-box button:hover{background:#15893f}
-  .login-error{color:var(--red);font-size:.78rem;margin-top:8px;display:none}
+/* ── LOGIN ─────────────────────────────────────────────── */
+#login-screen { position:fixed; inset:0; background:var(--black); display:flex; align-items:center; justify-content:center; z-index:999 }
+.login-box { background:var(--coal); border:1px solid var(--ash); border-top:3px solid var(--green); border-radius:6px; padding:36px 32px; width:100%; max-width:360px }
+.login-box h2 { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.5rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px }
+.login-box .slogan { font-size:.74rem; color:var(--lime-l); margin-bottom:18px }
+.login-box p { font-size:.8rem; color:var(--text-dim); margin-bottom:24px }
+.field { margin-bottom:12px }
+.field input { width:100%; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.9rem; padding:10px 14px; outline:none; font-family:'Inter',sans-serif }
+.field input:focus { border-color:var(--lime) }
+.login-box button { width:100%; background:var(--green); border:none; color:#fff; font-size:.85rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:11px; border-radius:4px; cursor:pointer; margin-top:4px }
+.login-box button:hover { background:#15893f }
+.login-error { color:var(--red); font-size:.78rem; margin-top:8px; display:none }
+.login-attempts { font-size:.7rem; color:var(--muted); margin-top:10px; text-align:center }
 
-  /* LAYOUT */
-  #app{display:none}
-  header{background:var(--coal);border-bottom:2px solid var(--green);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
-  .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.4rem;text-transform:uppercase}
-  .logo .b{color:var(--green)}.logo .s{color:var(--lime-l)}
-  .header-right{display:flex;align-items:center;gap:10px}
-  .admin-badge{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lime-l);background:#0a1400;border:1px solid var(--lime);padding:4px 10px;border-radius:3px}
-  .btn-sm{background:none;border:1px solid var(--ash);color:var(--text-dim);font-size:.75rem;padding:5px 12px;border-radius:3px;cursor:pointer;font-family:'Inter',sans-serif}
-  .btn-sm:hover{border-color:var(--green);color:var(--green)}
+/* ── LAYOUT ─────────────────────────────────────────────── */
+#app { display:none }
+header { background:var(--coal); border-bottom:2px solid var(--green); padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:56px; position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:8px; min-height:56px }
+.logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.4rem; text-transform:uppercase }
+.logo .b { color:var(--green) } .logo .s { color:var(--lime-l) }
+.header-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+.admin-badge { font-size:.68rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--lime-l); background:#0a1400; border:1px solid var(--lime); padding:4px 10px; border-radius:3px }
+.session-timer { font-size:.7rem; color:var(--text-dim); font-variant-numeric:tabular-nums; font-family:monospace }
+.session-timer.warn { color:var(--orange) }
+.btn-sm { background:none; border:1px solid var(--ash); color:var(--text-dim); font-size:.75rem; padding:5px 12px; border-radius:3px; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap }
+.btn-sm:hover { border-color:var(--green); color:var(--green) }
+.btn-theme { background:none; border:1px solid var(--ash); color:var(--text-dim); font-size:.75rem; padding:5px 10px; border-radius:3px; cursor:pointer }
+.btn-theme:hover { border-color:var(--lime); color:var(--lime-l) }
 
-  main{padding:20px;max-width:1500px;margin:0 auto}
+/* ── API BANNER ─────────────────────────────────────────── */
+#api-banner { display:none; background:#3a0a0a; border-bottom:1px solid var(--red-dim); padding:7px 20px; font-size:.75rem; color:var(--red); align-items:center; gap:8px }
+#api-banner.visible { display:flex }
 
-  /* STAT CARDS */
-  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
-  .stat{background:var(--panel);border:1px solid var(--ash);border-radius:5px;padding:13px 15px}
-  .stat-label{font-size:.67rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
-  .stat-value{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
-  .stat-value.green{color:var(--green)}.stat-value.orange{color:var(--lime-l)}.stat-value.red{color:var(--red)}
+/* ── TABS NAVEGACIÓN ────────────────────────────────────── */
+.nav-tabs { display:flex; background:var(--coal); border-bottom:1px solid var(--ash); padding:0 20px; overflow-x:auto; scrollbar-width:none }
+.nav-tabs::-webkit-scrollbar { display:none }
+.nav-tab { background:none; border:none; border-bottom:2px solid transparent; color:var(--text-dim); font-family:'Inter',sans-serif; font-size:.8rem; font-weight:600; padding:11px 16px; cursor:pointer; white-space:nowrap; transition:color .15s,border-color .15s }
+.nav-tab:hover { color:var(--text) }
+.nav-tab.active { color:var(--lime-l); border-bottom-color:var(--green) }
 
-  /* SECTION */
-  .section-label{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--lime-l);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-  .section-label::after{content:'';flex:1;height:1px;background:var(--ash)}
+/* ── TAB PAGES ──────────────────────────────────────────── */
+.tab-page { display:none }
+.tab-page.active { display:block }
 
-  /* STREAM CARDS */
-  .stream-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:16px;margin-bottom:26px}
-  .stream-card{background:var(--panel);border:1px solid var(--ash);border-radius:6px;overflow:hidden}
-  .sc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--ash);background:#111;gap:8px;flex-wrap:wrap}
-  .sc-title-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-  .sc-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.1rem;color:var(--lime-l);min-width:20px}
-  .sc-name-input{background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em;outline:none;width:140px;padding:2px 4px;cursor:pointer}
-  .sc-name-input:hover{border-bottom-color:var(--ash)}
-  .sc-name-input:focus{border-bottom-color:var(--lime);cursor:text}
-  .sc-status{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap}
-  .sc-status.live{background:#0a1f0a;color:var(--green);border:1px solid var(--green-dim)}
-  .sc-status.offline{background:#1a0a0a;color:var(--red);border:1px solid var(--red-dim)}
+main { padding:20px; max-width:1500px; margin:0 auto }
 
-  /* PREVIEW */
-  .sc-preview{position:relative;aspect-ratio:16/9;background:#050505;cursor:pointer}
-  .sc-preview video{width:100%;height:100%;object-fit:contain;display:none}
-  .preview-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#080808}
-  .preview-overlay .play-btn{width:40px;height:40px;border:1.5px solid var(--ash);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:border-color .2s,color .2s}
-  .sc-preview:hover .play-btn{border-color:var(--lime-l);color:var(--lime-l)}
-  .preview-overlay p{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-  .preview-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#080808}
-  .spinner{width:24px;height:24px;border:2px solid var(--ash);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+/* ── STAT CARDS ─────────────────────────────────────────── */
+.stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:22px }
+.stat { background:var(--panel); border:1px solid var(--ash); border-radius:5px; padding:13px 15px }
+.stat-label { font-size:.67rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin-bottom:5px }
+.stat-value { font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums }
+.stat-value.green { color:var(--green) } .stat-value.orange { color:var(--lime-l) } .stat-value.red { color:var(--red) }
 
-  /* QUALITY BADGE */
-  .quality-row{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--ash2);flex-wrap:wrap}
-  .q-badge{font-size:.68rem;font-weight:600;padding:3px 8px;border-radius:3px;border:1px solid var(--ash);color:var(--text-dim);cursor:default}
-  .q-badge.active{border-color:var(--green-dim);color:var(--green);background:#0a1f0a}
-  .q-label{font-size:.68rem;color:var(--muted);align-self:center}
+/* ── SECTION ─────────────────────────────────────────────── */
+.section-label { font-size:.68rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--lime-l); margin-bottom:14px; display:flex; align-items:center; gap:10px }
+.section-label::after { content:''; flex:1; height:1px; background:var(--ash) }
 
-  /* BODY */
-  .sc-body{padding:12px 14px}
-  .sc-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1a1a1a}
-  .sc-row:last-child{border-bottom:none}
-  .sc-key{font-size:.74rem;color:var(--text-dim)}
-  .sc-val{font-size:.8rem;font-weight:500;font-variant-numeric:tabular-nums}
-  .sc-val.green{color:var(--green)}.sc-val.orange{color:var(--lime-l)}
+/* ── STREAM CARDS ────────────────────────────────────────── */
+.stream-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr)); gap:16px; margin-bottom:26px }
+.stream-card { background:var(--panel); border:1px solid var(--ash); border-radius:6px; overflow:hidden }
+.sc-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--ash); background:var(--coal); gap:8px; flex-wrap:wrap }
+.sc-title-wrap { display:flex; align-items:center; gap:8px; flex:1; min-width:0 }
+.sc-num { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.1rem; color:var(--lime-l); min-width:20px }
+.sc-name-input { background:transparent; border:none; border-bottom:1px solid transparent; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:.95rem; text-transform:uppercase; letter-spacing:.06em; outline:none; width:140px; padding:2px 4px; cursor:pointer }
+.sc-name-input:hover { border-bottom-color:var(--ash) }
+.sc-name-input:focus { border-bottom-color:var(--lime); cursor:text }
+.sc-header-btns { display:flex; gap:4px; flex-wrap:wrap }
+.sc-status { font-size:.67rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:3px; white-space:nowrap }
+.sc-status.live { background:#0a1f0a; color:var(--green); border:1px solid var(--green-dim) }
+.sc-status.offline { background:#1a0a0a; color:var(--red); border:1px solid var(--red-dim) }
 
-  /* INPUT CONFIG */
-  .sc-input-section{border-top:1px solid var(--ash);padding:12px 14px;background:var(--ash2)}
-  .input-row{display:flex;gap:6px;margin-bottom:8px}
-  .input-row input{flex:1;background:#0e0e0e;border:1px solid var(--ash);border-radius:4px;color:var(--text);font-size:.78rem;padding:7px 10px;outline:none;font-family:'Inter',sans-serif}
-  .input-row input:focus{border-color:var(--lime)}
-  .input-row input::placeholder{color:var(--muted)}
-  .btn-action{border:none;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:7px 12px;border-radius:4px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
-  .btn-start{background:var(--green-dim);color:#fff}.btn-start:hover{background:#15803d}
-  .btn-stop{background:var(--red-dim);color:#fff}.btn-stop:hover{background:var(--red)}
-  .btn-preview{background:var(--ash);color:var(--text-dim)}.btn-preview:hover{background:#333;color:var(--text)}
-  .input-type-row{display:flex;gap:6px;margin-bottom:8px}
-  .type-btn{flex:1;background:#0e0e0e;border:1px solid var(--ash);color:var(--text-dim);font-size:.72rem;font-weight:600;padding:6px;border-radius:4px;cursor:pointer;text-align:center;font-family:'Inter',sans-serif}
-  .type-btn.active{border-color:var(--lime);color:var(--lime-l);background:#0a1400}
-  .stream-status-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-  .stream-pid{font-size:.7rem;color:var(--muted);font-family:monospace}
+/* ── PREVIEW ─────────────────────────────────────────────── */
+.sc-preview { position:relative; aspect-ratio:16/9; background:#050505; cursor:pointer }
+.sc-preview video { width:100%; height:100%; object-fit:contain; display:none }
+.preview-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; background:#080808 }
+.preview-overlay .play-btn { width:40px; height:40px; border:1.5px solid var(--ash); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:border-color .2s,color .2s }
+.sc-preview:hover .play-btn { border-color:var(--lime-l); color:var(--lime-l) }
+.preview-overlay p { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em }
+.preview-loading { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:#080808 }
+.spinner { width:24px; height:24px; border:2px solid var(--ash); border-top-color:var(--lime); border-radius:50%; animation:spin .8s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+.btn-snapshot { position:absolute; bottom:8px; right:8px; background:#000a; border:1px solid var(--ash); color:var(--text-dim); font-size:.65rem; padding:4px 8px; border-radius:3px; cursor:pointer; opacity:0; transition:opacity .2s }
+.sc-preview:hover .btn-snapshot { opacity:1 }
+.btn-snapshot:hover { border-color:var(--lime-l); color:var(--lime-l) }
 
-  /* CHART */
-  .chart-wrap{background:var(--panel);border:1px solid var(--ash);border-radius:6px;padding:16px;margin-bottom:24px}
-  .chart-title{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px}
-  canvas#viewerChart{width:100%!important;height:130px!important}
+/* ── QUALITY ROW ─────────────────────────────────────────── */
+.quality-row { display:flex; gap:6px; padding:8px 14px; border-bottom:1px solid var(--ash2); flex-wrap:wrap }
+.q-badge { font-size:.68rem; font-weight:600; padding:3px 8px; border-radius:3px; border:1px solid var(--ash); color:var(--text-dim); cursor:pointer }
+.q-badge.active { border-color:var(--green-dim); color:var(--green); background:#0a1f0a }
+.q-label { font-size:.68rem; color:var(--muted); align-self:center }
 
-  /* LOG */
-  .log-box{background:#0d0d0d;border:1px solid var(--ash);border-radius:5px;padding:10px 14px;font-family:monospace;font-size:.72rem;color:var(--text-dim);height:120px;overflow-y:auto;line-height:1.9}
-  .log-entry .ts{color:var(--muted)}.log-entry .ok{color:var(--green)}.log-entry .err{color:var(--red)}.log-entry .warn{color:var(--lime-l)}
+/* ── BODY ────────────────────────────────────────────────── */
+.sc-body { padding:12px 14px }
+.sc-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--ash2) }
+.sc-row:last-child { border-bottom:none }
+.sc-key { font-size:.74rem; color:var(--text-dim) }
+.sc-val { font-size:.8rem; font-weight:500; font-variant-numeric:tabular-nums }
+.sc-val.green { color:var(--green) } .sc-val.orange { color:var(--lime-l) }
+.copy-url-btn { background:none; border:1px solid var(--ash); color:var(--muted); font-size:.6rem; padding:2px 6px; border-radius:3px; cursor:pointer; margin-left:6px }
+.copy-url-btn:hover { border-color:var(--lime); color:var(--lime-l) }
 
-  @media(max-width:640px){main{padding:10px}.stat-row{grid-template-columns:1fr 1fr}.sc-header{gap:6px}}
+/* ── INPUT CONFIG ─────────────────────────────────────────── */
+.sc-input-section { border-top:1px solid var(--ash); padding:12px 14px; background:var(--ash2) }
+.input-row { display:flex; gap:6px; margin-bottom:8px }
+.input-row input { flex:1; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.78rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif }
+.input-row input:focus { border-color:var(--lime) }
+.input-row input::placeholder { color:var(--muted) }
+.btn-action { border:none; font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:7px 12px; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap }
+.btn-start   { background:var(--green-dim); color:#fff } .btn-start:hover { background:#15803d }
+.btn-stop    { background:var(--red-dim);   color:#fff } .btn-stop:hover  { background:var(--red) }
+.btn-preview { background:var(--ash); color:var(--text-dim) } .btn-preview:hover { background:#333; color:var(--text) }
+.btn-restart { background:#1a1200; border:1px solid #7a5a00; color:var(--orange); font-size:.7rem; padding:5px 10px; border-radius:3px; cursor:pointer }
+.btn-restart:hover { background:#2a2000; color:#fcd34d }
+.btn-remove { background:none; border:1px solid var(--red-dim); color:var(--red); font-size:.65rem; padding:4px 8px; border-radius:3px; cursor:pointer }
+.btn-remove:hover { background:var(--red-dim) }
+.input-type-row { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap }
+.type-btn { flex:1; min-width:80px; background:var(--black); border:1px solid var(--ash); color:var(--text-dim); font-size:.72rem; font-weight:600; padding:6px; border-radius:4px; cursor:pointer; text-align:center; font-family:'Inter',sans-serif }
+.type-btn.active { border-color:var(--lime); color:var(--lime-l); background:#0a1400 }
+.stream-status-row { display:flex; align-items:center; justify-content:space-between; margin-top:4px; flex-wrap:wrap; gap:6px }
+.stream-pid { font-size:.7rem; color:var(--muted); font-family:monospace }
+
+/* ── EVENTO POR CANCHA ──────────────────────────────────── */
+.event-section { border-top:1px solid var(--ash); padding:10px 14px; background:var(--panel) }
+.event-section-label { font-size:.65rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px }
+.event-row { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap }
+.event-row input { flex:1; min-width:120px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.75rem; padding:6px 10px; outline:none; font-family:'Inter',sans-serif }
+.event-row input:focus { border-color:var(--lime) }
+.event-row textarea { flex:1; min-width:200px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.75rem; padding:6px 10px; outline:none; font-family:'Inter',sans-serif; resize:vertical; min-height:40px }
+.event-row textarea:focus { border-color:var(--lime) }
+.btn-event-save { background:var(--green-dim); border:none; color:#fff; font-size:.68rem; font-weight:600; padding:6px 10px; border-radius:4px; cursor:pointer; white-space:nowrap }
+.btn-event-save:hover { background:#15803d }
+.btn-event-clear { background:none; border:1px solid var(--ash); color:var(--muted); font-size:.68rem; padding:6px 10px; border-radius:4px; cursor:pointer }
+.btn-event-clear:hover { border-color:var(--red-dim); color:var(--red) }
+.event-preview { font-size:.68rem; color:var(--green); margin-top:2px }
+
+/* ── ABR CONFIG ─────────────────────────────────────────── */
+.abr-section { border-top:1px solid var(--ash); padding:10px 14px; background:var(--ash2) }
+.abr-section-label { font-size:.65rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px }
+.abr-row { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; align-items:center }
+.abr-chip { background:#0a1400; border:1px solid var(--green-dim); color:var(--lime-l); font-size:.7rem; padding:3px 8px; border-radius:12px; display:flex; align-items:center; gap:4px }
+.abr-chip button { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.8rem; padding:0 2px; line-height:1 }
+.abr-chip button:hover { color:var(--red) }
+.abr-inputs { display:flex; gap:6px; flex-wrap:wrap }
+.abr-inputs input { width:80px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.75rem; padding:4px 8px; outline:none; font-family:'Inter',sans-serif }
+.abr-inputs input:focus { border-color:var(--lime) }
+.btn-abr-add { background:none; border:1px solid var(--green-dim); color:var(--green); font-size:.7rem; padding:4px 10px; border-radius:4px; cursor:pointer }
+
+/* ── CHART ───────────────────────────────────────────────── */
+.chart-wrap { background:var(--panel); border:1px solid var(--ash); border-radius:6px; padding:16px; margin-bottom:24px }
+.chart-title { font-size:.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px }
+canvas#viewerChart { width:100%!important; height:130px!important }
+
+/* ── LOG ─────────────────────────────────────────────────── */
+.log-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:8px; flex-wrap:wrap }
+.log-header .section-label { margin-bottom:0; flex:1 }
+.log-box { background:#0d0d0d; border:1px solid var(--ash); border-radius:5px; padding:10px 14px; font-family:monospace; font-size:.72rem; color:var(--text-dim); height:150px; overflow-y:auto; line-height:1.9; position:relative }
+[data-theme="light"] .log-box { background:#f0f0eb }
+.log-entry .ts { color:var(--muted) } .log-entry .ok { color:var(--green) } .log-entry .err { color:var(--red) } .log-entry .warn { color:var(--lime-l) }
+.log-new-badge { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:var(--green-dim); color:#fff; font-size:.65rem; padding:3px 10px; border-radius:10px; cursor:pointer; display:none; white-space:nowrap; border:none; font-family:'Inter',sans-serif }
+.log-new-badge.visible { display:block }
+.btn-log-dl { background:none; border:1px solid var(--ash); color:var(--text-dim); font-size:.7rem; padding:4px 10px; border-radius:3px; cursor:pointer; white-space:nowrap }
+.btn-log-dl:hover { border-color:var(--lime); color:var(--lime-l) }
+
+/* ── HISTORIAL STREAMS ──────────────────────────────────── */
+.stream-history { background:var(--panel); border:1px solid var(--ash); border-radius:6px; padding:16px; margin-bottom:24px }
+.history-table { width:100%; border-collapse:collapse; font-size:.75rem; margin-top:10px }
+.history-table th { text-align:left; padding:6px 10px; color:var(--text-dim); font-weight:600; font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; border-bottom:1px solid var(--ash) }
+.history-table td { padding:6px 10px; border-bottom:1px solid var(--ash2); font-variant-numeric:tabular-nums }
+.history-table tr:last-child td { border-bottom:none }
+.history-table .live-row td { color:var(--green) }
+
+/* ── STATS HORAS ────────────────────────────────────────── */
+.hours-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:24px }
+.hours-card { background:var(--panel); border:1px solid var(--ash); border-radius:5px; padding:12px 14px }
+.hours-card-name { font-size:.7rem; color:var(--text-dim); margin-bottom:4px }
+.hours-card-val { font-size:1.2rem; font-weight:700; color:var(--lime-l); font-variant-numeric:tabular-nums }
+.hours-card-sub { font-size:.65rem; color:var(--muted); margin-top:2px }
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-bg { position:fixed; inset:0; background:#000b; z-index:800; display:none; align-items:center; justify-content:center }
+.modal-bg.open { display:flex }
+.modal { background:var(--coal); border:1px solid var(--ash); border-top:3px solid var(--red); border-radius:6px; padding:28px 28px 24px; max-width:360px; width:90% }
+.modal h3 { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.2rem; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px }
+.modal p { font-size:.82rem; color:var(--text-dim); margin-bottom:20px; line-height:1.6 }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end }
+.modal-btns button { border:none; font-size:.78rem; font-weight:600; padding:8px 16px; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif }
+.btn-modal-cancel { background:var(--ash2); color:var(--text-dim) }
+.btn-modal-cancel:hover { background:var(--ash) }
+.btn-modal-confirm { background:var(--red-dim); color:#fff }
+.btn-modal-confirm:hover { background:var(--red) }
+
+/* ── PANIC BTN ───────────────────────────────────────────── */
+.btn-panic { background:var(--red-dim); border:1px solid var(--red); color:#fff; font-size:.72rem; font-weight:700; padding:5px 14px; border-radius:3px; cursor:pointer; letter-spacing:.08em; text-transform:uppercase; font-family:'Inter',sans-serif; white-space:nowrap }
+.btn-panic:hover { background:var(--red) }
+
+/* ── CANCHA MANAGER ──────────────────────────────────────── */
+.cancha-mgr { background:var(--panel); border:1px solid var(--ash); border-radius:6px; padding:16px; margin-bottom:24px }
+.cancha-mgr-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap }
+.cancha-mgr-row input { flex:1; min-width:160px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.8rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif }
+.cancha-mgr-row input:focus { border-color:var(--lime) }
+.btn-add-cancha { background:var(--green-dim); border:none; color:#fff; font-size:.72rem; font-weight:600; padding:7px 14px; border-radius:4px; cursor:pointer; white-space:nowrap }
+.btn-add-cancha:hover { background:#15803d }
+.cancha-list-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--ash2); flex-wrap:wrap }
+.cancha-list-item:last-child { border-bottom:none }
+.cancha-list-num { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:.9rem; color:var(--lime-l); min-width:28px }
+.cancha-list-name { font-size:.82rem; flex:1; min-width:100px }
+
+/* ── GLOBAL EVENT ────────────────────────────────────────── */
+.global-event-wrap { background:var(--panel); border:1px solid var(--ash); border-radius:6px; padding:16px; margin-bottom:24px }
+.global-event-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
+.global-event-row input { flex:1; min-width:140px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.8rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif }
+.global-event-row input:focus { border-color:var(--lime) }
+.global-event-row textarea { flex:1; min-width:200px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.8rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif; resize:vertical }
+.global-event-row textarea:focus { border-color:var(--lime) }
+
+/* ── OFFLINE MSG ─────────────────────────────────────────── */
+.offline-msg-wrap { background:var(--panel); border:1px solid var(--ash); border-radius:6px; padding:16px; margin-bottom:24px }
+.offline-msg-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
+.offline-msg-row input { flex:1; min-width:200px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.8rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif }
+.offline-msg-row input:focus { border-color:var(--lime) }
+
+/* ── MODO MANTENIMIENTO ─────────────────────────────────── */
+.maint-wrap { background:#1a0a00; border:1px solid #5a3000; border-radius:6px; padding:16px; margin-bottom:24px }
+.maint-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center }
+.maint-row input { flex:1; min-width:200px; background:var(--black); border:1px solid var(--ash); border-radius:4px; color:var(--text); font-size:.8rem; padding:7px 10px; outline:none; font-family:'Inter',sans-serif }
+.maint-row input:focus { border-color:var(--orange) }
+.btn-maint-on  { background:#5a1a00; border:none; color:var(--orange); font-size:.75rem; font-weight:600; padding:8px 14px; border-radius:4px; cursor:pointer; white-space:nowrap }
+.btn-maint-on:hover { background:#7a2a00 }
+.btn-maint-off { background:var(--green-dim); border:none; color:#fff; font-size:.75rem; font-weight:600; padding:8px 14px; border-radius:4px; cursor:pointer; white-space:nowrap }
+.btn-maint-off:hover { background:#15803d }
+.maint-status  { font-size:.72rem; margin-top:6px }
+.maint-status.active { color:var(--orange) }
+.maint-status.inactive { color:var(--muted) }
+
+/* ── NOTIF ALERT ─────────────────────────────────────────── */
+.stream-alert { position:fixed; top:70px; right:16px; background:var(--coal); border:1px solid var(--red); border-left:3px solid var(--red); border-radius:5px; padding:12px 16px; font-size:.78rem; max-width:280px; z-index:700; display:none; box-shadow:0 4px 16px #000a }
+.stream-alert.visible { display:block }
+.stream-alert strong { color:var(--red); display:block; margin-bottom:3px }
+.stream-alert-close { position:absolute; top:6px; right:8px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:.9rem }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:768px) {
+  main { padding:12px }
+  .stat-row { grid-template-columns:1fr 1fr }
+  .stream-grid { grid-template-columns:1fr }
+  .sc-header { gap:6px }
+  .header-right { gap:6px }
+  .btn-panic { font-size:.65rem; padding:4px 10px }
+  .hours-grid { grid-template-columns:1fr 1fr }
+  header { height:auto; padding:8px 12px }
+}
+@media(max-width:480px) {
+  .stat-row { grid-template-columns:1fr }
+  .hours-grid { grid-template-columns:1fr }
+  .nav-tab { padding:10px 10px; font-size:.75rem }
+}
 </style>
 </head>
 <body>
@@ -126,100 +287,588 @@
 <div id="login-screen">
   <div class="login-box">
     <h2><span style="color:var(--green)">Radio Patio</span> <span style="color:var(--lime-l)">TV</span></h2>
-    <p class="slogan">Parchate que Fary renunciará jajaja 😂</p>
-    <p>Panel de administración — acceso restringido</p>
+    <p class="slogan">Panel de administración</p>
+    <p>Acceso restringido</p>
     <div class="field"><input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Contraseña incorrecta</div>
+    <div class="login-attempts" id="login-attempts"></div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
+  <div id="api-banner">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>⚠ Sin conexión con bs-api — botones Iniciar/Detener no funcionarán. Usa bs-proxy en terminal.</span>
+  </div>
+
   <header>
     <div class="logo"><span class="b">Radio Patio</span> <span class="s">TV</span></div>
     <div class="header-right">
       <div class="admin-badge">Admin</div>
+      <span class="session-timer" id="session-timer">—</span>
+      <button class="btn-panic" onclick="confirmPanicStop()">⏹ DETENER TODO</button>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">☀</button>
       <button class="btn-sm" onclick="logout()">Salir</button>
     </div>
   </header>
 
+  <!-- Tabs navegación -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('streams')">📡 Streams</button>
+    <button class="nav-tab" onclick="showTab('eventos')">📅 Eventos</button>
+    <button class="nav-tab" onclick="showTab('estadisticas')">📊 Estadísticas</button>
+    <button class="nav-tab" onclick="showTab('configuracion')">⚙️ Config</button>
+  </div>
+
+  <!-- Alerta de stream caído -->
+  <div class="stream-alert" id="stream-alert">
+    <button class="stream-alert-close" onclick="dismissAlert()">✕</button>
+    <strong id="alert-title">Stream caído</strong>
+    <span id="alert-body">—</span>
+  </div>
+
   <main>
-    <!-- STATS GLOBALES -->
-    <div class="stat-row">
-      <div class="stat"><div class="stat-label">Streams activos</div><div class="stat-value green" id="g-active">0 / 4</div></div>
-      <div class="stat"><div class="stat-label">Espectadores</div><div class="stat-value orange" id="g-viewers">—</div></div>
-      <div class="stat"><div class="stat-label">Bitrate total</div><div class="stat-value" id="g-bitrate">—</div></div>
-      <div class="stat"><div class="stat-label">Actualización</div><div class="stat-value" id="g-time" style="font-size:.95rem">—</div></div>
+
+    <!-- ════ TAB: STREAMS ═════════════════════════════════ -->
+    <div id="tab-streams" class="tab-page active">
+      <!-- STATS -->
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">Streams activos</div><div class="stat-value green" id="g-active">0 / 0</div></div>
+        <div class="stat"><div class="stat-label">Espectadores</div><div class="stat-value orange" id="g-viewers">—</div></div>
+        <div class="stat"><div class="stat-label">Bitrate total</div><div class="stat-value" id="g-bitrate">—</div></div>
+        <div class="stat"><div class="stat-label">Actualización</div><div class="stat-value" id="g-time" style="font-size:.95rem">—</div></div>
+        <div class="stat"><div class="stat-label">Horas hoy</div><div class="stat-value orange" id="g-hours-today">—</div></div>
+      </div>
+
+      <div class="section-label">Canchas</div>
+      <div class="stream-grid" id="stream-grid"></div>
+
+      <div class="chart-wrap">
+        <div class="chart-title">Espectadores por cancha — últimos 10 min</div>
+        <canvas id="viewerChart"></canvas>
+      </div>
+
+      <div class="log-header">
+        <div class="section-label" style="flex:1;margin-bottom:0">Log de eventos</div>
+        <button class="btn-log-dl" onclick="downloadLog()">⬇ .txt</button>
+      </div>
+      <div class="log-box" id="log-box" onscroll="onLogScroll()">
+        <button class="log-new-badge" id="log-new-badge" onclick="scrollLogToBottom()">↓ nuevos</button>
+      </div>
     </div>
 
-    <!-- STREAMS -->
-    <div class="section-label">Canchas</div>
-    <div class="stream-grid" id="stream-grid"></div>
+    <!-- ════ TAB: EVENTOS ════════════════════════════════ -->
+    <div id="tab-eventos" class="tab-page">
 
-    <!-- CHART -->
-    <div class="chart-wrap">
-      <div class="chart-title">Espectadores por cancha — últimos 10 min</div>
-      <canvas id="viewerChart"></canvas>
+      <!-- EVENTO GLOBAL HERO -->
+      <div class="section-label">Contador global (hero)</div>
+      <div class="global-event-wrap">
+        <div style="font-size:.75rem;color:var(--text-dim)">Muestra un contador en el hero de index.html hasta la fecha del evento. El mensaje personalizado aparece bajo el título.</div>
+        <div class="global-event-row">
+          <input id="global-event-nombre" placeholder="Nombre del evento" maxlength="50">
+          <input type="datetime-local" id="global-event-fecha">
+        </div>
+        <div class="global-event-row">
+          <textarea id="global-event-msg" placeholder="Mensaje personalizado (aparece bajo el título del hero)" rows="2"></textarea>
+        </div>
+        <div class="global-event-row">
+          <button class="btn-event-save" onclick="saveGlobalEvent()">Guardar y publicar</button>
+          <button class="btn-event-clear" onclick="clearGlobalEvent()">Borrar</button>
+        </div>
+        <div class="event-preview" id="global-event-preview"></div>
+      </div>
+
+      <!-- EVENTOS POR CANCHA (sección separada) -->
+      <div class="section-label">Eventos por cancha</div>
+      <div id="eventos-cancha-list"></div>
+
     </div>
 
-    <!-- LOG -->
-    <div class="section-label">Log de eventos</div>
-    <div class="log-box" id="log-box"></div>
+    <!-- ════ TAB: ESTADÍSTICAS ═══════════════════════════ -->
+    <div id="tab-estadisticas" class="tab-page">
+
+      <div class="section-label">Horas transmitidas por cancha</div>
+      <div class="hours-grid" id="hours-grid"></div>
+
+      <div class="section-label">
+        Historial de streams
+        <button class="btn-log-dl" onclick="loadHistory()" style="margin-left:8px">↻ Actualizar</button>
+      </div>
+      <div class="stream-history">
+        <table class="history-table">
+          <thead>
+            <tr><th>Cancha</th><th>Inicio</th><th>Fin</th><th>Duración</th></tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="4" style="color:var(--muted);padding:12px">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ════ TAB: CONFIGURACIÓN ══════════════════════════ -->
+    <div id="tab-configuracion" class="tab-page">
+
+      <!-- GESTIÓN DE CANCHAS -->
+      <div class="section-label">Gestión de canchas</div>
+      <div class="cancha-mgr">
+        <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:10px">Los cambios se reflejan en index.html en tiempo real vía API.</div>
+        <div id="cancha-list"></div>
+        <div class="cancha-mgr-row" style="margin-top:12px">
+          <input id="new-cancha-name" placeholder="Nombre nueva cancha (ej: Cancha 5)" maxlength="30">
+          <button class="btn-add-cancha" onclick="addCancha()">+ Añadir</button>
+        </div>
+      </div>
+
+      <!-- MENSAJE OFFLINE -->
+      <div class="section-label">Mensaje sin señal</div>
+      <div class="offline-msg-wrap">
+        <div style="font-size:.75rem;color:var(--text-dim)">Texto que ven los espectadores cuando no hay stream activo.</div>
+        <div class="offline-msg-row">
+          <input id="offline-msg-input" placeholder="Sin señal — el stream comenzará pronto" maxlength="80">
+          <button class="btn-event-save" onclick="saveOfflineMsg()">Guardar</button>
+        </div>
+      </div>
+
+      <!-- MODO MANTENIMIENTO -->
+      <div class="section-label">Modo mantenimiento</div>
+      <div class="maint-wrap">
+        <div style="font-size:.75rem;color:var(--orange)">⚠ Activa esto para pausar TODAS las canchas con un mensaje. Los espectadores verán una pantalla de mantenimiento.</div>
+        <div class="maint-row">
+          <input id="maint-msg-input" placeholder="Mensaje de mantenimiento" maxlength="120">
+          <button class="btn-maint-on" onclick="setMaintenance(true)">🔧 Activar</button>
+          <button class="btn-maint-off" onclick="setMaintenance(false)">✓ Desactivar</button>
+        </div>
+        <div class="maint-status" id="maint-status">Estado: desconocido</div>
+      </div>
+
+    </div>
+
   </main>
+</div>
+
+<!-- MODAL CONFIRMACIÓN -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">¿Confirmar acción?</h3>
+    <p id="modal-body">Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-confirm" id="modal-confirm-btn" onclick="confirmModal()">Confirmar</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
 const PASS = 'patiotv23@';
-// Token desactivado por el momento
 const SERVER = window.location.origin;
 const STATS_URL = `${SERVER}/stats`;
+const SESSION_DURATION = 4 * 60 * 60 * 1000;
 
-// ── Estado de canchas ─────────────────────────────────────
-const state = {
-  canchas: [
-    { id:1, nombre:'Cancha 1', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
-    { id:2, nombre:'Cancha 2', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
-    { id:3, nombre:'Cancha 3', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
-    { id:4, nombre:'Cancha 4', inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' },
-  ]
-};
+// ── THEME ──────────────────────────────────────────────────
+const savedTheme = localStorage.getItem('bs-theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('bs-theme', t);
+  document.getElementById('btn-theme').textContent = t === 'dark' ? '☀' : '🌙';
+}
+if (savedTheme === 'light') document.getElementById('btn-theme') && (document.getElementById('btn-theme').textContent = '🌙');
+
+// ── TABS ───────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name.slice(0,5))) t.classList.add('active');
+  });
+  if (name === 'estadisticas') { loadHistory(); loadHoursStats(); }
+  if (name === 'eventos') renderEventosCanchas();
+  if (name === 'configuracion') { loadOfflineMsgUI(); loadMaintenanceStatus(); }
+}
+
+// ── ESTADO ────────────────────────────────────────────────
+function loadCanchas() {
+  try {
+    const raw = localStorage.getItem('bs-canchas');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [
+    { id:1, nombre:'Cancha 1' }, { id:2, nombre:'Cancha 2' },
+    { id:3, nombre:'Cancha 3' }, { id:4, nombre:'Cancha 4' },
+  ];
+}
+function saveCanchas(list) { localStorage.setItem('bs-canchas', JSON.stringify(list)); }
+
+let canchas = loadCanchas();
+let canchaState = {};
+function ensureCanchaState(id) {
+  if (!canchaState[id]) canchaState[id] = { inputType:'rtmp', inputUrl:'', pid:null, live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' };
+  return canchaState[id];
+}
+canchas.forEach(c => ensureCanchaState(c.id));
 
 const hlsPlayers = {};
-let viewerHistory = {1:[],2:[],3:[],4:[]};
+let viewerHistory = {};
 let timeLabels = [];
-let chart, refreshInterval;
+let chart, refreshInterval, sessionInterval;
+let modalCallback = null;
+let logLines = [];
+let logAtBottom = true;
+let apiFailCount = 0;
+let prevLiveState = {};
+let loginAttempts = 0;
+const MAX_LOGIN_ATTEMPTS = 5;
+let abrConfig = {}; // por cancha
 
-// ── AUTH ─────────────────────────────────────────────────
+// ── AUTH ───────────────────────────────────────────────────
 function doLogin() {
+  if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+    document.getElementById('login-error').textContent = 'Demasiados intentos. Recarga la página.';
+    document.getElementById('login-error').style.display = 'block'; return;
+  }
   if (document.getElementById('pwd-input').value === PASS) {
+    loginAttempts = 0;
+    const expiry = Date.now() + SESSION_DURATION;
+    sessionStorage.setItem('bs-session', expiry);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     init();
   } else {
+    loginAttempts++;
+    const remaining = MAX_LOGIN_ATTEMPTS - loginAttempts;
     const e = document.getElementById('login-error');
-    e.style.display = 'block';
-    setTimeout(()=>e.style.display='none', 2500);
+    e.textContent = 'Contraseña incorrecta'; e.style.display = 'block';
+    if (remaining > 0) document.getElementById('login-attempts').textContent = `${remaining} intento${remaining!==1?'s':''} restante${remaining!==1?'s':''}`;
+    setTimeout(() => e.style.display = 'none', 2500);
   }
 }
+
+function checkSession() {
+  const expiry = parseInt(sessionStorage.getItem('bs-session') || '0');
+  if (!expiry || Date.now() > expiry) return false;
+  return expiry;
+}
+
+function startSessionTimer(expiry) {
+  const el = document.getElementById('session-timer');
+  clearInterval(sessionInterval);
+  sessionInterval = setInterval(() => {
+    const remaining = expiry - Date.now();
+    if (remaining <= 0) { logout(); return; }
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.classList.toggle('warn', remaining < 15 * 60 * 1000);
+  }, 1000);
+}
+
 function logout() {
-  clearInterval(refreshInterval);
-  Object.values(hlsPlayers).forEach(h=>h&&h.destroy());
+  clearInterval(refreshInterval); clearInterval(sessionInterval);
+  sessionStorage.removeItem('bs-session');
+  Object.values(hlsPlayers).forEach(h => h && h.destroy());
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('pwd-input').value = '';
 }
 
-// ── RENDER CARDS ─────────────────────────────────────────
+// ── MODAL ──────────────────────────────────────────────────
+function openModal(title, body, confirmText, cb) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent = body;
+  document.getElementById('modal-confirm-btn').textContent = confirmText || 'Confirmar';
+  modalCallback = cb;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); modalCallback = null; }
+function confirmModal() { closeModal(); if (modalCallback) modalCallback(); }
+document.getElementById('modal-bg').addEventListener('click', e => { if (e.target === document.getElementById('modal-bg')) closeModal(); });
+
+// ── GESTIÓN DE CANCHAS ─────────────────────────────────────
+function renderCanchaList() {
+  const list = document.getElementById('cancha-list');
+  list.innerHTML = '';
+  canchas.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'cancha-list-item';
+    row.innerHTML = `
+      <span class="cancha-list-num">#${c.id}</span>
+      <input class="cancha-list-name" value="${c.nombre}" maxlength="30"
+        onchange="renameCancha(${c.id}, this.value)" style="background:var(--black);border:1px solid var(--ash);border-radius:4px;color:var(--text);padding:4px 8px;font-family:'Inter',sans-serif;font-size:.82rem;outline:none">
+      <button class="btn-remove" onclick="removeCancha(${c.id})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function renameCancha(id, nombre) {
+  const c = canchas.find(x => x.id === id);
+  if (!c) return;
+  c.nombre = nombre.trim() || `Cancha ${id}`;
+  saveCanchas(canchas);
+  renderCards();
+  log(`Cancha ${id} renombrada a "${c.nombre}"`, 'ok');
+}
+
+function addCancha() {
+  const input = document.getElementById('new-cancha-name');
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  const maxId = canchas.reduce((m, c) => Math.max(m, c.id), 0);
+  const newId = maxId + 1;
+  canchas.push({ id: newId, nombre });
+  ensureCanchaState(newId);
+  viewerHistory[newId] = [];
+  saveCanchas(canchas);
+  input.value = '';
+  renderCanchaList();
+  renderCards();
+  rebuildChart();
+  log(`Cancha ${newId} "${nombre}" añadida`, 'ok');
+}
+
+function removeCancha(id) {
+  openModal('¿Eliminar cancha?', `Se eliminará la Cancha ${id}. Si hay un stream activo, detente primero.`, 'Eliminar', () => {
+    if (hlsPlayers[id]) { hlsPlayers[id].destroy(); delete hlsPlayers[id]; }
+    canchas = canchas.filter(c => c.id !== id);
+    delete canchaState[id];
+    saveCanchas(canchas);
+    renderCanchaList();
+    renderCards();
+    rebuildChart();
+    log(`Cancha ${id} eliminada`, 'warn');
+  });
+}
+
+// ── EVENTOS API ────────────────────────────────────────────
+async function saveEventAPI(key, nombre, fecha, mensaje, isGlobal) {
+  const body = { nombre, fecha, mensaje };
+  if (isGlobal) body.global = true; else body.cancha = key;
+  try {
+    await fetch(`${SERVER}/api/events`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+  } catch {}
+  // fallback localStorage
+  const ev = { nombre, fecha, mensaje };
+  if (isGlobal) localStorage.setItem('bs-global-event', JSON.stringify(ev));
+  else localStorage.setItem(`bs-event-${key}`, JSON.stringify(ev));
+}
+
+async function deleteEventAPI(key, isGlobal) {
+  const qs = isGlobal ? 'global=true' : `cancha=${key}`;
+  try { await fetch(`${SERVER}/api/events?${qs}`, { method:'DELETE' }); } catch {}
+  if (isGlobal) localStorage.removeItem('bs-global-event');
+  else localStorage.removeItem(`bs-event-${key}`);
+}
+
+// ── EVENTO GLOBAL HERO ─────────────────────────────────────
+async function saveGlobalEvent() {
+  const nombre = document.getElementById('global-event-nombre').value.trim();
+  const fecha  = document.getElementById('global-event-fecha').value;
+  const msg    = document.getElementById('global-event-msg').value.trim();
+  if (!fecha) return;
+  await saveEventAPI('__global__', nombre || 'Próximo evento', fecha, msg, true);
+  const d = new Date(fecha);
+  document.getElementById('global-event-preview').textContent = `✓ Publicado: "${nombre || 'Próximo evento'}" — ${d.toLocaleString('es-CO')}`;
+  log(`Evento global publicado: "${nombre}" — ${d.toLocaleString('es-CO')}`, 'ok');
+}
+
+async function clearGlobalEvent() {
+  await deleteEventAPI(null, true);
+  document.getElementById('global-event-preview').textContent = '';
+  document.getElementById('global-event-nombre').value = '';
+  document.getElementById('global-event-fecha').value = '';
+  document.getElementById('global-event-msg').value = '';
+  log('Evento global eliminado', 'warn');
+}
+
+async function loadGlobalEventUI() {
+  try {
+    // Intentar desde API primero
+    const r = await fetch(`${SERVER}/api/events`);
+    if (r.ok) {
+      const events = await r.json();
+      const ev = events['__global__'];
+      if (ev) {
+        document.getElementById('global-event-nombre').value = ev.nombre || '';
+        document.getElementById('global-event-fecha').value = ev.fecha || '';
+        document.getElementById('global-event-msg').value = ev.mensaje || '';
+        const d = new Date(ev.fecha);
+        document.getElementById('global-event-preview').textContent = `Activo: "${ev.nombre}" — ${d.toLocaleString('es-CO')}`;
+        return;
+      }
+    }
+  } catch {}
+  // Fallback localStorage
+  try {
+    const raw = localStorage.getItem('bs-global-event');
+    if (!raw) return;
+    const ev = JSON.parse(raw);
+    document.getElementById('global-event-nombre').value = ev.nombre || '';
+    document.getElementById('global-event-fecha').value = ev.fecha || '';
+    const d = new Date(ev.fecha);
+    document.getElementById('global-event-preview').textContent = `Activo: "${ev.nombre}" — ${d.toLocaleString('es-CO')}`;
+  } catch {}
+}
+
+// ── EVENTOS POR CANCHA (tab) ───────────────────────────────
+async function renderEventosCanchas() {
+  let events = {};
+  try {
+    const r = await fetch(`${SERVER}/api/events`);
+    if (r.ok) events = await r.json();
+  } catch {}
+
+  const el = document.getElementById('eventos-cancha-list');
+  el.innerHTML = '';
+  canchas.forEach(c => {
+    const key = `cancha${c.id}`;
+    const ev = events[key] || {};
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--panel);border:1px solid var(--ash);border-radius:6px;padding:16px;margin-bottom:16px';
+    div.innerHTML = `
+      <div class="section-label" style="font-size:.72rem;margin-bottom:12px">#${c.id} ${c.nombre}</div>
+      <div class="event-row">
+        <input id="ev-nombre-${c.id}" placeholder="Nombre del evento" maxlength="50" value="${ev.nombre||''}">
+        <input type="datetime-local" id="ev-fecha-${c.id}" value="${ev.fecha||''}">
+      </div>
+      <div class="event-row">
+        <textarea id="ev-msg-${c.id}" placeholder="Mensaje personalizado (aparece en la pantalla próximamente)" rows="2">${ev.mensaje||''}</textarea>
+      </div>
+      <div class="event-row">
+        <button class="btn-event-save" onclick="saveEventCancha(${c.id})">Guardar y publicar</button>
+        <button class="btn-event-clear" onclick="clearEventCancha(${c.id})">Borrar</button>
+      </div>
+      <div class="event-preview" id="ev-preview-${c.id}">${ev.fecha ? `✓ ${ev.nombre||'Evento'} — ${new Date(ev.fecha).toLocaleString('es-CO')}` : ''}</div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+async function saveEventCancha(id) {
+  const nombre = document.getElementById(`ev-nombre-${id}`).value.trim();
+  const fecha  = document.getElementById(`ev-fecha-${id}`).value;
+  const msg    = document.getElementById(`ev-msg-${id}`).value.trim();
+  if (!fecha) return;
+  await saveEventAPI(`cancha${id}`, nombre || 'Próximo evento', fecha, msg, false);
+  const d = new Date(fecha);
+  const prev = document.getElementById(`ev-preview-${id}`);
+  if (prev) prev.textContent = `✓ ${nombre||'Evento'} — ${d.toLocaleString('es-CO')}`;
+  log(`Evento cancha ${id}: "${nombre}" publicado`, 'ok');
+}
+
+async function clearEventCancha(id) {
+  await deleteEventAPI(`cancha${id}`, false);
+  const prev = document.getElementById(`ev-preview-${id}`);
+  if (prev) prev.textContent = '';
+  log(`Evento cancha ${id} eliminado`, 'warn');
+}
+
+// ── MENSAJE OFFLINE ────────────────────────────────────────
+function saveOfflineMsg() {
+  const msg = document.getElementById('offline-msg-input').value.trim();
+  if (!msg) return;
+  localStorage.setItem('bs-offline-msg', msg);
+  log(`Mensaje sin señal actualizado: "${msg}"`, 'ok');
+}
+function loadOfflineMsgUI() {
+  document.getElementById('offline-msg-input').value = localStorage.getItem('bs-offline-msg') || '';
+}
+
+// ── MANTENIMIENTO ──────────────────────────────────────────
+async function setMaintenance(enabled) {
+  const msg = document.getElementById('maint-msg-input').value.trim();
+  try {
+    await fetch(`${SERVER}/api/maintenance`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ enabled, mensaje: msg || 'Sistema en mantenimiento. Volvemos pronto.' })
+    });
+  } catch {}
+  document.getElementById('maint-status').textContent = `Estado: ${enabled ? '🔴 ACTIVO' : '✓ Desactivado'}`;
+  document.getElementById('maint-status').className = `maint-status ${enabled ? 'active' : 'inactive'}`;
+  log(`Modo mantenimiento: ${enabled ? 'ACTIVADO' : 'desactivado'}`, enabled ? 'err' : 'ok');
+}
+
+async function loadMaintenanceStatus() {
+  try {
+    const r = await fetch(`${SERVER}/api/maintenance`);
+    const d = await r.json();
+    document.getElementById('maint-msg-input').value = d.mensaje || '';
+    document.getElementById('maint-status').textContent = `Estado: ${d.enabled ? '🔴 ACTIVO' : '✓ Desactivado'}`;
+    document.getElementById('maint-status').className = `maint-status ${d.enabled ? 'active' : 'inactive'}`;
+  } catch {}
+}
+
+// ── ABR CONFIG ─────────────────────────────────────────────
+async function loadAbrConfig() {
+  try {
+    const r = await fetch(`${SERVER}/api/abr-config`);
+    if (r.ok) abrConfig = await r.json();
+  } catch {}
+}
+
+function getAbrForCancha(id) {
+  return abrConfig[`cancha${id}`]?.resolutions || [];
+}
+
+function renderAbrChips(id) {
+  const resolutions = getAbrForCancha(id);
+  const container = document.getElementById(`abr-chips-${id}`);
+  if (!container) return;
+  container.innerHTML = '';
+  resolutions.forEach((r, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'abr-chip';
+    chip.innerHTML = `${r.height}p / ${r.bitrate}k <button onclick="removeAbr(${id},${i})">✕</button>`;
+    container.appendChild(chip);
+  });
+}
+
+async function addAbr(id) {
+  const h = parseInt(document.getElementById(`abr-h-${id}`).value);
+  const b = parseInt(document.getElementById(`abr-b-${id}`).value);
+  if (!h || !b) return;
+  if (!abrConfig[`cancha${id}`]) abrConfig[`cancha${id}`] = { resolutions: [] };
+  abrConfig[`cancha${id}`].resolutions.push({ height: h, bitrate: b });
+  abrConfig[`cancha${id}`].resolutions.sort((a,b) => b.height - a.height);
+  await fetch(`${SERVER}/api/abr-config`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ cancha:`cancha${id}`, resolutions: abrConfig[`cancha${id}`].resolutions })
+  }).catch(() => {});
+  document.getElementById(`abr-h-${id}`).value = '';
+  document.getElementById(`abr-b-${id}`).value = '';
+  renderAbrChips(id);
+  log(`Cancha ${id}: resolución ${h}p/${b}k añadida`, 'ok');
+}
+
+async function removeAbr(id, idx) {
+  if (!abrConfig[`cancha${id}`]) return;
+  abrConfig[`cancha${id}`].resolutions.splice(idx, 1);
+  await fetch(`${SERVER}/api/abr-config`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ cancha:`cancha${id}`, resolutions: abrConfig[`cancha${id}`].resolutions })
+  }).catch(() => {});
+  renderAbrChips(id);
+}
+
+// ── RENDER CARDS ───────────────────────────────────────────
 function renderCards() {
   const grid = document.getElementById('stream-grid');
   grid.innerHTML = '';
-  state.canchas.forEach(c => {
+  canchas.forEach(c => {
+    const st = ensureCanchaState(c.id);
     const div = document.createElement('div');
     div.className = 'stream-card';
     div.id = `sc-${c.id}`;
-
     const hlsUrl = `${SERVER}/stream/cancha${c.id}/master.m3u8`;
 
     div.innerHTML = `
@@ -227,10 +876,12 @@ function renderCards() {
         <div class="sc-title-wrap">
           <span class="sc-num">#${c.id}</span>
           <input class="sc-name-input" id="name-${c.id}" value="${c.nombre}"
-            onchange="renameCancha(${c.id}, this.value)"
-            title="Clic para editar nombre">
+            onchange="renameCancha(${c.id}, this.value)">
         </div>
-        <div class="sc-status ${c.live?'live':'offline'}" id="status-${c.id}">${c.live?'En vivo':'Offline'}</div>
+        <div class="sc-header-btns">
+          <div class="sc-status ${st.live?'live':'offline'}" id="status-${c.id}">${st.live?'En vivo':'Offline'}</div>
+          <button class="btn-restart" onclick="restartFFmpeg(${c.id})" title="Reiniciar ffmpeg">↺</button>
+        </div>
       </div>
 
       <div class="sc-preview" id="preview-wrap-${c.id}" onclick="togglePreview(${c.id})">
@@ -242,6 +893,7 @@ function renderCards() {
           <p>Vista previa</p>
         </div>
         <div class="preview-loading" id="preview-loading-${c.id}"><div class="spinner"></div></div>
+        <button class="btn-snapshot" onclick="takeSnapshot(event,${c.id})">📷</button>
       </div>
 
       <div class="quality-row" id="quality-row-${c.id}">
@@ -255,148 +907,195 @@ function renderCards() {
         <div class="sc-row"><span class="sc-key">Fotogramas/s</span><span class="sc-val" id="sf-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">Códec</span><span class="sc-val" id="codec-${c.id}">—</span></div>
         <div class="sc-row"><span class="sc-key">Tiempo activo</span><span class="sc-val" id="st-${c.id}">—</span></div>
-        <div class="sc-row"><span class="sc-key">URL HLS</span><span class="sc-val" style="font-size:.65rem;color:var(--muted);word-break:break-all">/stream/cancha${c.id}/master.m3u8</span></div>
+        <div class="sc-row">
+          <span class="sc-key">URL HLS</span>
+          <span>
+            <span style="font-size:.62rem;color:var(--muted)">/stream/cancha${c.id}/master.m3u8</span>
+            <button class="copy-url-btn" onclick="copyUrl('${hlsUrl}')">copiar</button>
+          </span>
+        </div>
       </div>
 
       <div class="sc-input-section">
         <div class="input-type-row">
-          <div class="type-btn ${c.inputType==='rtmp'?'active':''}" onclick="setInputType(${c.id},'rtmp')">OBS / RTMP</div>
-          <div class="type-btn ${c.inputType==='m3u8'?'active':''}" onclick="setInputType(${c.id},'m3u8')">M3U8 externo</div>
-          <div class="type-btn ${c.inputType==='file'?'active':''}" onclick="setInputType(${c.id},'file')">Archivo local</div>
+          <div class="type-btn ${st.inputType==='rtmp'?'active':''}" onclick="setInputType(${c.id},'rtmp')">OBS/RTMP</div>
+          <div class="type-btn ${st.inputType==='m3u8'?'active':''}" onclick="setInputType(${c.id},'m3u8')">M3U8</div>
+          <div class="type-btn ${st.inputType==='file'?'active':''}" onclick="setInputType(${c.id},'file')">Archivo</div>
         </div>
-        <div id="input-area-${c.id}">
-          ${renderInputArea(c)}
-        </div>
+        <div id="input-area-${c.id}">${renderInputArea(c.id)}</div>
         <div class="stream-status-row">
-          <span class="stream-pid" id="pid-${c.id}">${c.pid ? `PID: ${c.pid}` : ''}</span>
-          <button class="btn-action btn-stop" onclick="stopStream(${c.id})" ${!c.pid?'style="opacity:.4;cursor:not-allowed"':''}>⏹ Detener</button>
+          <span class="stream-pid" id="pid-${c.id}">${st.pid ? `PID: ${st.pid}` : ''}</span>
+          <button class="btn-action btn-stop" onclick="confirmStop(${c.id})" ${!st.pid?'style="opacity:.4;cursor:not-allowed"':''}>⏹ Detener</button>
         </div>
+      </div>
+
+      <div class="abr-section">
+        <div class="abr-section-label">Resoluciones ABR (personalizado)</div>
+        <div id="abr-chips-${c.id}" class="abr-row"></div>
+        <div class="abr-inputs">
+          <input id="abr-h-${c.id}" placeholder="Alto (px)" type="number" min="144" max="2160">
+          <input id="abr-b-${c.id}" placeholder="Bitrate (kbps)" type="number" min="100" max="20000">
+          <button class="btn-abr-add" onclick="addAbr(${c.id})">+ Agregar</button>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:4px">Configura las resoluciones disponibles para esta cancha (requiere reiniciar ffmpeg)</div>
       </div>
     `;
     grid.appendChild(div);
+    renderAbrChips(c.id);
   });
 }
 
-function renderInputArea(c) {
-  if (c.inputType === 'rtmp') {
+function renderInputArea(id) {
+  const st = ensureCanchaState(id);
+  if (st.inputType === 'rtmp') {
     return `
       <p style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
         OBS → Settings → Stream<br>
-        <span style="color:var(--lime-l);font-family:monospace">${SERVER.replace('http://','rtmp://')}/live</span> &nbsp;|&nbsp; Key: <span style="color:var(--lime-l);font-family:monospace">cancha${c.id}</span>
+        <span style="color:var(--lime-l);font-family:monospace">${SERVER.replace('http://','rtmp://')}/live</span> &nbsp;|&nbsp; Key: <span style="color:var(--lime-l);font-family:monospace">cancha${id}</span>
       </p>
       <div class="input-row">
-        <button class="btn-action btn-preview" style="width:100%" onclick="togglePreview(${c.id})">▶ Vista previa</button>
-      </div>
-    `;
-  } else if (c.inputType === 'm3u8') {
-    return `
-      <div class="input-row">
-        <input id="url-input-${c.id}" type="text" placeholder="https://fuente-externa.com/stream.m3u8" value="${c.inputUrl}">
-      </div>
-      <div class="input-row">
-        <button class="btn-action btn-start" onclick="startProxy(${c.id})">▶ Iniciar</button>
-        <button class="btn-action btn-preview" onclick="togglePreview(${c.id})">👁 Preview</button>
-      </div>
-    `;
-  } else {
-    return `
-      <div class="input-row">
-        <input id="url-input-${c.id}" type="text" placeholder="/ruta/al/archivo.mp4 o .m3u8" value="${c.inputUrl}">
-      </div>
-      <div class="input-row">
-        <button class="btn-action btn-start" onclick="startProxy(${c.id})">▶ Iniciar</button>
-        <button class="btn-action btn-preview" onclick="togglePreview(${c.id})">👁 Preview</button>
+        <button class="btn-action btn-preview" style="width:100%" onclick="togglePreview(${id})">▶ Vista previa</button>
       </div>
     `;
   }
+  return `
+    <div class="input-row">
+      <input id="url-input-${id}" type="text" placeholder="${st.inputType==='m3u8'?'https://fuente.com/stream.m3u8':'/ruta/archivo.mp4'}" value="${st.inputUrl}">
+    </div>
+    <div class="input-row">
+      <button class="btn-action btn-start" onclick="startProxy(${id})">▶ Iniciar</button>
+      <button class="btn-action btn-preview" onclick="togglePreview(${id})">👁 Preview</button>
+    </div>
+  `;
 }
 
-// ── RENAME CANCHA ─────────────────────────────────────────
-function renameCancha(id, nombre) {
-  const c = state.canchas.find(x=>x.id===id);
-  c.nombre = nombre.trim() || `Cancha ${id}`;
-  log(`Cancha ${id} renombrada a "${c.nombre}"`, 'ok');
-  // Actualizar página pública via API (si existe endpoint)
-}
-
-// ── INPUT TYPE ────────────────────────────────────────────
+// ── INPUT TYPE ─────────────────────────────────────────────
 function setInputType(id, type) {
-  const c = state.canchas.find(x=>x.id===id);
-  c.inputType = type;
-  renderCards();
+  ensureCanchaState(id).inputType = type;
+  const area = document.getElementById(`input-area-${id}`);
+  if (area) area.innerHTML = renderInputArea(id);
+  const sc = document.getElementById(`sc-${id}`);
+  if (sc) sc.querySelectorAll('.type-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['rtmp','m3u8','file'][i] === type);
+  });
 }
 
-// ── INICIAR PROXY (M3U8 externo / archivo) ────────────────
+function copyUrl(url) {
+  navigator.clipboard?.writeText(url).then(() => log(`URL copiada: ${url}`, 'ok')).catch(() => {});
+}
+
+// ── SNAPSHOT ───────────────────────────────────────────────
+function takeSnapshot(e, id) {
+  e.stopPropagation();
+  const video = document.getElementById(`preview-video-${id}`);
+  if (!video || video.style.display !== 'block') { log(`Cancha ${id}: activa la vista previa primero`, 'warn'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 854; canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `cancha${id}-${Date.now()}.jpg`; a.click();
+    URL.revokeObjectURL(a.href);
+    log(`Cancha ${id}: snapshot guardado`, 'ok');
+  }, 'image/jpeg', 0.92);
+}
+
+// ── REINICIAR FFMPEG ───────────────────────────────────────
+async function restartFFmpeg(id) {
+  log(`Cancha ${id}: reiniciando ffmpeg...`, 'warn');
+  try {
+    const res = await fetch(`${SERVER}/api/stream/restart`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cancha:`cancha${id}` })
+    });
+    if (res.ok) {
+      log(`Cancha ${id}: ffmpeg terminado — nginx-rtmp reiniciará al siguiente publish`, 'ok');
+      showStreamAlert({ nombre: `Cancha ${id}`, id }, 'restart');
+    } else {
+      const d = await res.json();
+      log(`Cancha ${id}: ${d.error || 'error al reiniciar'}`, 'err');
+    }
+  } catch {
+    log(`Cancha ${id}: sin API — usa bs-utils restart en terminal`, 'warn');
+  }
+}
+
+// ── INICIAR PROXY ──────────────────────────────────────────
 async function startProxy(id) {
-  const c = state.canchas.find(x=>x.id===id);
+  const st = ensureCanchaState(id);
   const urlInput = document.getElementById(`url-input-${id}`);
   const url = urlInput ? urlInput.value.trim() : '';
   if (!url) { log(`Cancha ${id}: URL vacía`, 'err'); return; }
-  c.inputUrl = url;
-
+  st.inputUrl = url;
   log(`Cancha ${id}: iniciando proxy desde ${url}`, 'warn');
-
   try {
-    const res = await fetch('/api/stream/start', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ cancha: `cancha${id}`, url })
+    const res = await fetch(`${SERVER}/api/stream/start`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cancha:`cancha${id}`, url })
     });
     if (res.ok) {
       const data = await res.json();
-      c.pid = data.pid;
+      st.pid = data.pid;
       log(`Cancha ${id}: stream iniciado (PID ${data.pid})`, 'ok');
+      checkApiHealth(true);
     } else {
       log(`Cancha ${id}: error al iniciar — usa bs-proxy en terminal`, 'warn');
-      log(`  bs-proxy cancha${id} "${url}"`, 'warn');
     }
   } catch {
-    log(`Cancha ${id}: sin API — ejecuta en terminal:`, 'warn');
-    log(`  bs-proxy cancha${id} "${url}"`, 'warn');
+    log(`Cancha ${id}: sin API — ejecuta: bs-proxy cancha${id} "${url}"`, 'warn');
   }
   renderCards();
 }
 
-// ── DETENER STREAM ────────────────────────────────────────
-async function stopStream(id) {
-  const c = state.canchas.find(x=>x.id===id);
-  log(`Cancha ${id}: deteniendo stream...`, 'warn');
+// ── DETENER ────────────────────────────────────────────────
+function confirmStop(id) {
+  const c = canchas.find(x => x.id === id);
+  openModal(`¿Detener ${c ? c.nombre : 'cancha '+id}?`,
+    `Se cortará el stream para todos los espectadores.`, 'Detener stream',
+    () => stopStream(id));
+}
 
+async function stopStream(id) {
+  const st = ensureCanchaState(id);
+  log(`Cancha ${id}: deteniendo stream...`, 'warn');
   try {
-    const res = await fetch('/api/stream/stop', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ cancha: `cancha${id}` })
+    const res = await fetch(`${SERVER}/api/stream/stop`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cancha:`cancha${id}` })
     });
-    if (res.ok) {
-      c.pid = null;
-      log(`Cancha ${id}: stream detenido`, 'ok');
-    } else {
-      log(`Cancha ${id}: sin API — ejecuta en terminal: bs-stop cancha${id}`, 'warn');
-    }
+    if (res.ok) { st.pid = null; log(`Cancha ${id}: stream detenido`, 'ok'); }
+    else log(`Cancha ${id}: sin API — ejecuta: bs-stop cancha${id}`, 'warn');
   } catch {
     log(`Cancha ${id}: ejecuta en terminal: bs-stop cancha${id}`, 'warn');
   }
   renderCards();
 }
 
-// ── VISTA PREVIA ──────────────────────────────────────────
+// ── PÁNICO ─────────────────────────────────────────────────
+function confirmPanicStop() {
+  const active = canchas.filter(c => ensureCanchaState(c.id).pid);
+  if (active.length === 0) { log('No hay streams activos', 'warn'); return; }
+  openModal('⏹ DETENER TODO',
+    `Se detendrán ${active.length} stream${active.length!==1?'s':''}: ${active.map(c=>c.nombre).join(', ')}. Todos los espectadores perderán la señal.`,
+    'Detener todo',
+    async () => { for (const c of active) await stopStream(c.id); log('Todos los streams detenidos', 'warn'); });
+}
+
+// ── VISTA PREVIA ───────────────────────────────────────────
 function togglePreview(id) {
-  const video = document.getElementById(`preview-video-${id}`);
+  const video   = document.getElementById(`preview-video-${id}`);
   const overlay = document.getElementById(`preview-overlay-${id}`);
   const loading = document.getElementById(`preview-loading-${id}`);
+  if (!video) return;
 
   if (video.style.display === 'block') {
-    // Detener preview
     if (hlsPlayers[id]) { hlsPlayers[id].destroy(); delete hlsPlayers[id]; }
-    video.src = '';
-    video.style.display = 'none';
+    video.src = ''; video.style.display = 'none';
     overlay.style.display = 'flex';
     log(`Cancha ${id}: vista previa cerrada`, 'ok');
     return;
   }
 
-  // Iniciar preview
   overlay.style.display = 'none';
   loading.style.display = 'flex';
   const url = `${SERVER}/stream/cancha${id}/master.m3u8`;
@@ -407,39 +1106,24 @@ function togglePreview(id) {
     hls.loadSource(url);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => {
-      loading.style.display = 'none';
-      video.style.display = 'block';
-      video.play().catch(()=>{});
+      loading.style.display = 'none'; video.style.display = 'block';
+      video.play().catch(() => {});
       log(`Cancha ${id}: vista previa activa`, 'ok');
-      // Mostrar calidades disponibles
       renderQualities(id, hls, data.levels);
     });
     hls.on(Hls.Events.ERROR, (e, data) => {
-      if (data.fatal) {
-        loading.style.display = 'none';
-        overlay.style.display = 'flex';
-        log(`Cancha ${id}: sin señal para vista previa`, 'err');
-      }
+      if (data.fatal) { loading.style.display = 'none'; overlay.style.display = 'flex'; log(`Cancha ${id}: sin señal para vista previa`, 'err'); }
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = url;
-    video.addEventListener('loadedmetadata', () => {
-      loading.style.display = 'none';
-      video.style.display = 'block';
-      video.play().catch(()=>{});
-    }, {once:true});
-    video.addEventListener('error', () => {
-      loading.style.display = 'none';
-      overlay.style.display = 'flex';
-    }, {once:true});
+    video.addEventListener('loadedmetadata', () => { loading.style.display = 'none'; video.style.display = 'block'; video.play().catch(() => {}); }, {once:true});
+    video.addEventListener('error', () => { loading.style.display = 'none'; overlay.style.display = 'flex'; }, {once:true});
   }
 }
 
-// ── CALIDADES ─────────────────────────────────────────────
 function renderQualities(id, hls, levels) {
   const row = document.getElementById(`quality-row-${id}`);
   if (!levels || levels.length <= 1) return;
-
   let html = '<span class="q-label">Calidad:</span>';
   html += `<span class="q-badge active" id="q-auto-${id}" onclick="setQuality(${id},-1)">Auto</span>`;
   levels.forEach((l, i) => {
@@ -447,65 +1131,50 @@ function renderQualities(id, hls, levels) {
     html += `<span class="q-badge" id="q-${id}-${i}" onclick="setQuality(${id},${i})">${label}</span>`;
   });
   row.innerHTML = html;
-  row._hls = hls;
 }
 
 function setQuality(id, level) {
   const hls = hlsPlayers[id];
   if (!hls) return;
   hls.currentLevel = level;
-  const row = document.getElementById(`quality-row-${id}`);
-  row.querySelectorAll('.q-badge').forEach(b => b.classList.remove('active'));
-  const target = level === -1
-    ? document.getElementById(`q-auto-${id}`)
-    : document.getElementById(`q-${id}-${level}`);
+  document.querySelectorAll(`#quality-row-${id} .q-badge`).forEach(b => b.classList.remove('active'));
+  const target = level === -1 ? document.getElementById(`q-auto-${id}`) : document.getElementById(`q-${id}-${level}`);
   if (target) target.classList.add('active');
-  log(`Cancha ${id}: calidad cambiada a ${level===-1?'Auto':level}`, 'ok');
+  log(`Cancha ${id}: calidad → ${level===-1?'Auto':level}`, 'ok');
 }
 
-// ── STATS NGINX-RTMP ──────────────────────────────────────
-// NOTA: nginx-rtmp a veces emite <meta> truncado como <ta> cuando hay
-// metadata de video, generando XML inválido que rompe DOMParser (modo
-// 'text/xml') y hace que TODAS las canchas se vean offline cada refresh.
-// Por eso este parser usa regex sobre el texto crudo en vez de DOMParser:
-// no le importa si el XML es válido, solo extrae los valores que necesita.
+// ── STATS ──────────────────────────────────────────────────
 function parseStats(xmlText) {
   const result = {};
-  state.canchas.forEach(c => { result[`cancha${c.id}`] = { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' }; });
-
-  // Separar cada bloque <stream>...</stream> manualmente
-  const streamBlocks = xmlText.split('<stream>').slice(1).map(b => b.split('</stream>')[0]);
-
-  const grab = (block, tag) => {
-    const m = block.match(new RegExp(`<${tag}>([^<]*)</${tag}>`));
-    return m ? m[1].trim() : '';
-  };
-
-  streamBlocks.forEach(block => {
-    const name = grab(block, 'name');
+  canchas.forEach(c => { result[`cancha${c.id}`] = { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' }; });
+  xmlText.split('<stream>').slice(1).map(b => b.split('</stream>')[0]).forEach(block => {
+    const grab = tag => { const m = block.match(new RegExp(`<${tag}>([^<]*)</${tag}>`)); return m ? m[1].trim() : ''; };
+    const name = grab('name');
     if (!name || !result[name]) return;
-    const clients = parseInt(grab(block, 'nclients') || '0');
-    const bw = parseInt(grab(block, 'bw_video') || '0');
-    const codec = grab(block, 'codec') || '—';
-    const fps = parseFloat(grab(block, 'frame_rate') || '0');
-    const time = parseInt(grab(block, 'time') || '0');
-    const m = Math.floor(time/1000/60), sec = Math.floor((time/1000)%60);
-    result[name] = { live: clients>0||bw>0, viewers: Math.max(0,clients-1), bitrate: Math.round(bw/1000), fps: Math.round(fps), codec, uptime: time>0?`${m}m ${sec}s`:'—' };
+    const clients = parseInt(grab('nclients') || '0');
+    const bw    = parseInt(grab('bw_video') || '0');
+    const time  = parseInt(grab('time') || '0');
+    const m2 = Math.floor(time/1000/60), sec = Math.floor((time/1000)%60);
+    result[name] = { live: clients>0||bw>0, viewers:Math.max(0,clients-1), bitrate:Math.round(bw/1000), fps:Math.round(parseFloat(grab('frame_rate')||'0')), codec:grab('codec')||'—', uptime:time>0?`${m2}m ${sec}s`:'—' };
   });
   return result;
 }
 
 function updateUI(data) {
   let active=0, totalV=0, totalB=0;
-  state.canchas.forEach(c => {
-    const d = data[`cancha${c.id}`];
-    c.live = d.live; c.viewers = d.viewers; c.bitrate = d.bitrate; c.fps = d.fps; c.codec = d.codec; c.uptime = d.uptime;
+  canchas.forEach(c => {
+    const d = data[`cancha${c.id}`] || { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' };
+    const st = ensureCanchaState(c.id);
+    const wasLive = prevLiveState[c.id];
+    prevLiveState[c.id] = d.live;
+    if (wasLive && !d.live) showStreamAlert(c, 'down');
+    st.live=d.live; st.viewers=d.viewers; st.bitrate=d.bitrate; st.fps=d.fps; st.codec=d.codec; st.uptime=d.uptime;
     if (d.live) { active++; totalV+=d.viewers; totalB+=d.bitrate; }
 
-    const el = (id) => document.getElementById(id);
+    const el = id => document.getElementById(id);
     if (el(`status-${c.id}`)) {
       el(`status-${c.id}`).className = `sc-status ${d.live?'live':'offline'}`;
-      el(`status-${c.id}`).textContent = d.live?'En vivo':'Offline';
+      el(`status-${c.id}`).textContent = d.live ? 'En vivo' : 'Offline';
       el(`sv-${c.id}`).textContent = d.live ? d.viewers : '—';
       el(`sb-${c.id}`).textContent = d.live ? d.bitrate+' kbps' : '—';
       el(`sf-${c.id}`).textContent = d.live ? d.fps+' fps' : '—';
@@ -513,110 +1182,246 @@ function updateUI(data) {
       el(`st-${c.id}`).textContent = d.live ? d.uptime : '—';
     }
 
+    if (!viewerHistory[c.id]) viewerHistory[c.id] = [];
     viewerHistory[c.id].push(d.viewers);
     if (viewerHistory[c.id].length > 10) viewerHistory[c.id].shift();
   });
 
-  document.getElementById('g-active').textContent = `${active} / 4`;
-  document.getElementById('g-viewers').textContent = active>0 ? totalV : '—';
-  document.getElementById('g-bitrate').textContent = totalB>0 ? totalB+' kbps' : '—';
-  document.getElementById('g-time').textContent = new Date().toLocaleTimeString('es-CO');
+  document.getElementById('g-active').textContent  = `${active} / ${canchas.length}`;
+  document.getElementById('g-viewers').textContent  = active > 0 ? totalV : '—';
+  document.getElementById('g-bitrate').textContent  = totalB > 0 ? totalB+' kbps' : '—';
+  document.getElementById('g-time').textContent     = new Date().toLocaleTimeString('es-CO');
   updateChart();
 }
 
-// ── CHART ─────────────────────────────────────────────────
-const COLORS = ['#16a34a','#22c55e','#84cc16','#a3e635'];
+// ── HISTORIAL DE STREAMS ───────────────────────────────────
+async function loadHistory() {
+  try {
+    const r = await fetch(`${SERVER}/api/stream-stats`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const tbody = document.getElementById('history-body');
+    tbody.innerHTML = '';
+    const rows = [...data.streams].reverse().slice(0, 50);
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);padding:12px">Sin historial aún</td></tr>';
+      return;
+    }
+    rows.forEach(s => {
+      const tr = document.createElement('tr');
+      if (!s.end) tr.className = 'live-row';
+      const start = new Date(s.start).toLocaleString('es-CO');
+      const end   = s.end ? new Date(s.end).toLocaleString('es-CO') : '🔴 En vivo';
+      const dur   = s.durationMin != null ? `${s.durationMin} min` : (s.end ? '—' : '...');
+      tr.innerHTML = `<td>${s.cancha}</td><td>${start}</td><td>${end}</td><td>${dur}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch {
+    document.getElementById('history-body').innerHTML = '<tr><td colspan="4" style="color:var(--muted);padding:12px">Sin conexión con bs-api</td></tr>';
+  }
+}
+
+async function loadHoursStats() {
+  try {
+    const r = await fetch(`${SERVER}/api/stream-stats`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const grid = document.getElementById('hours-grid');
+    grid.innerHTML = '';
+
+    // Calcular horas hoy
+    const today = new Date().toDateString();
+    let todayMin = 0;
+
+    canchas.forEach(c => {
+      const key = `cancha${c.id}`;
+      const t = data.totals[key] || { sessions: 0, totalMin: 0 };
+      const hrs = (t.totalMin / 60).toFixed(1);
+      const card = document.createElement('div');
+      card.className = 'hours-card';
+      card.innerHTML = `
+        <div class="hours-card-name">#${c.id} ${c.nombre}</div>
+        <div class="hours-card-val">${hrs}h</div>
+        <div class="hours-card-sub">${t.sessions} sesiones · ${t.totalMin} min total</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Calcular horas hoy
+    data.streams.forEach(s => {
+      if (new Date(s.start).toDateString() === today) todayMin += (s.durationMin || 0);
+    });
+    document.getElementById('g-hours-today').textContent = `${(todayMin/60).toFixed(1)}h`;
+
+  } catch {
+    document.getElementById('hours-grid').innerHTML = '<div style="color:var(--muted);font-size:.8rem">Sin datos disponibles (requiere bs-api)</div>';
+  }
+}
+
+// ── ALERTA STREAM ──────────────────────────────────────────
+let alertTimer = null;
+function showStreamAlert(cancha, type) {
+  const alert = document.getElementById('stream-alert');
+  if (type === 'down') {
+    document.getElementById('alert-title').textContent = `⚠ ${cancha.nombre} dejó de transmitir`;
+    document.getElementById('alert-body').textContent = 'El stream cayó o terminó. Verifica OBS o bs-proxy.';
+    log(`⚠ ${cancha.nombre} (cancha${cancha.id}) dejó de transmitir`, 'err');
+  } else if (type === 'restart') {
+    document.getElementById('alert-title').textContent = `↺ ffmpeg reiniciado`;
+    document.getElementById('alert-body').textContent = `${cancha.nombre} — nginx-rtmp reiniciará en el próximo publish.`;
+  }
+  alert.classList.add('visible');
+  clearTimeout(alertTimer);
+  alertTimer = setTimeout(() => alert.classList.remove('visible'), 10000);
+}
+function dismissAlert() { document.getElementById('stream-alert').classList.remove('visible'); clearTimeout(alertTimer); }
+
+// ── API HEALTH ─────────────────────────────────────────────
+async function checkApiHealth(forceOk) {
+  if (forceOk) { apiFailCount = 0; document.getElementById('api-banner').classList.remove('visible'); return; }
+  try {
+    const res = await fetch(`${SERVER}/api/stream/status`, { signal: AbortSignal.timeout(3000) });
+    if (res.ok) { apiFailCount = 0; document.getElementById('api-banner').classList.remove('visible'); }
+    else throw new Error();
+  } catch {
+    apiFailCount++;
+    if (apiFailCount >= 3) document.getElementById('api-banner').classList.add('visible');
+  }
+}
+
+// ── CHART ──────────────────────────────────────────────────
+const COLORS = ['#16a34a','#22c55e','#84cc16','#a3e635','#38bdf8','#f59e0b','#f87171','#c084fc'];
 function buildChart() {
+  if (chart) { chart.destroy(); chart = null; }
   const ctx = document.getElementById('viewerChart').getContext('2d');
   chart = new Chart(ctx, {
     type:'line',
-    data:{
-      labels: timeLabels,
-      datasets: state.canchas.map((c,i)=>({
-        label: c.nombre,
-        data: viewerHistory[c.id],
-        borderColor: COLORS[i],
-        backgroundColor: COLORS[i]+'22',
-        borderWidth:1.5, pointRadius:2, fill:true, tension:.3
-      }))
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:false,
+    data:{ labels: timeLabels, datasets: canchas.map((c,i) => ({ label: c.nombre, data: viewerHistory[c.id]||[], borderColor: COLORS[i%COLORS.length], backgroundColor: COLORS[i%COLORS.length]+'22', borderWidth:1.5, pointRadius:2, fill:true, tension:.3 })) },
+    options:{ responsive:true, maintainAspectRatio:false, animation:false,
       plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } } },
-      scales:{
-        x:{ ticks:{color:'#555',font:{size:10},maxTicksLimit:5}, grid:{color:'#1a1a1a'} },
-        y:{ ticks:{color:'#555',font:{size:10}}, grid:{color:'#1a1a1a'}, min:0 }
-      }
+      scales:{ x:{ ticks:{color:'#555',font:{size:10},maxTicksLimit:5}, grid:{color:'#1a1a1a'} }, y:{ ticks:{color:'#555',font:{size:10}}, grid:{color:'#1a1a1a'}, min:0 } }
     }
   });
 }
+function rebuildChart() { buildChart(); }
 
 function updateChart() {
   if (!chart) return;
   const now = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   timeLabels.push(now);
-  if (timeLabels.length>10) timeLabels.shift();
+  if (timeLabels.length > 10) timeLabels.shift();
   chart.data.labels = [...timeLabels];
-  state.canchas.forEach((c,i)=>{ chart.data.datasets[i].data = [...viewerHistory[c.id]]; });
+  chart.data.datasets = canchas.map((c,i) => ({
+    label: c.nombre, data: [...(viewerHistory[c.id]||[])],
+    borderColor: COLORS[i%COLORS.length], backgroundColor: COLORS[i%COLORS.length]+'22',
+    borderWidth:1.5, pointRadius:2, fill:true, tension:.3
+  }));
   chart.update('none');
 }
 
-// ── LOG ───────────────────────────────────────────────────
+// ── LOG ────────────────────────────────────────────────────
 function log(msg, type='ok') {
-  const box = document.getElementById('log-box');
   const ts = new Date().toLocaleTimeString('es-CO');
+  logLines.push({ ts, msg, type });
+  const box = document.getElementById('log-box');
   const div = document.createElement('div');
   div.className = 'log-entry';
   div.innerHTML = `<span class="ts">[${ts}]</span> <span class="${type}">${msg}</span>`;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-  if (box.children.length>60) box.removeChild(box.firstChild);
+  box.insertBefore(div, document.getElementById('log-new-badge'));
+  if (logLines.length > 200) { logLines.shift(); if (box.children.length > 201) box.removeChild(box.firstChild); }
+  if (logAtBottom) scrollLogToBottom();
+  else {
+    const badge = document.getElementById('log-new-badge');
+    badge.textContent = `↓ ${(parseInt(badge.textContent)||0)+1} nuevos`;
+    badge.classList.add('visible');
+  }
 }
 
-// ── FETCH STATS ───────────────────────────────────────────
+function onLogScroll() {
+  const box = document.getElementById('log-box');
+  logAtBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 10;
+  if (logAtBottom) { document.getElementById('log-new-badge').classList.remove('visible'); document.getElementById('log-new-badge').textContent = ''; }
+}
+
+function scrollLogToBottom() {
+  const box = document.getElementById('log-box');
+  box.scrollTop = box.scrollHeight;
+  document.getElementById('log-new-badge').classList.remove('visible');
+  logAtBottom = true;
+}
+
+function downloadLog() {
+  const content = logLines.map(l => `[${l.ts}] [${l.type.toUpperCase()}] ${l.msg}`).join('\n');
+  const blob = new Blob([content], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `radiopatio-log-${Date.now()}.txt`; a.click();
+  URL.revokeObjectURL(a.href);
+  log('Log descargado', 'ok');
+}
+
+// ── FETCH STATS ────────────────────────────────────────────
 async function fetchStats() {
   try {
     const res = await fetch(STATS_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    updateUI(parseStats(text));
-  } catch(e) {
+    if (!res.ok) throw new Error();
+    updateUI(parseStats(await res.text()));
+  } catch {
     const demo = {};
-    state.canchas.forEach(c=>{ demo[`cancha${c.id}`]={live:false,viewers:0,bitrate:0,fps:0,codec:'—',uptime:'—'}; });
+    canchas.forEach(c => { demo[`cancha${c.id}`] = { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' }; });
     updateUI(demo);
   }
+  checkApiHealth();
 }
 
-// ── INIT ──────────────────────────────────────────────────
 async function syncProxyStatus() {
   try {
-    const res = await fetch('/api/stream/status');
+    const res = await fetch(`${SERVER}/api/stream/status`);
     if (!res.ok) return;
     const data = await res.json();
-    state.canchas.forEach(c => {
+    canchas.forEach(c => {
       const d = data[`cancha${c.id}`];
-      if (d && d.running) {
-        c.pid = d.pid;
-        // Si tenía un tipo manual configurado se respeta; si no, asumimos m3u8
-        if (c.inputType === 'rtmp') c.inputType = 'm3u8';
-      }
+      const st = ensureCanchaState(c.id);
+      if (d && d.running) { st.pid = d.pid; if (st.inputType === 'rtmp') st.inputType = 'm3u8'; }
     });
     renderCards();
-  } catch {
-    // Sin bs-api disponible — el panel sigue funcionando con bs-proxy manual
-  }
+  } catch {}
 }
 
-function init() {
+// ── SHORTCUT R ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if ((e.key === 'r' || e.key === 'R') && document.getElementById('app').style.display !== 'none') {
+    fetchStats(); log('Stats actualizadas (R)', 'ok');
+  }
+});
+
+// ── INIT ───────────────────────────────────────────────────
+async function init() {
+  renderCanchaList();
   renderCards();
   buildChart();
+  await loadAbrConfig();
+  renderCards(); // volver a renderizar con ABR
+  loadGlobalEventUI();
+  loadOfflineMsgUI();
   fetchStats();
   syncProxyStatus();
   log('Panel iniciado', 'ok');
+  const expiry = checkSession();
+  if (expiry) startSessionTimer(expiry);
   refreshInterval = setInterval(fetchStats, 5000);
 }
 
-document.getElementById('pwd-input').focus();
+const expiry = checkSession();
+if (expiry) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  init();
+} else {
+  document.getElementById('pwd-input').focus();
+}
+
+document.getElementById('btn-theme').textContent = (localStorage.getItem('bs-theme') === 'light') ? '🌙' : '☀';
 </script>
 </body>
 </html>
