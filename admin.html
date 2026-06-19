@@ -464,19 +464,31 @@ function setQuality(id, level) {
 }
 
 // ── STATS NGINX-RTMP ──────────────────────────────────────
+// NOTA: nginx-rtmp a veces emite <meta> truncado como <ta> cuando hay
+// metadata de video, generando XML inválido que rompe DOMParser (modo
+// 'text/xml') y hace que TODAS las canchas se vean offline cada refresh.
+// Por eso este parser usa regex sobre el texto crudo en vez de DOMParser:
+// no le importa si el XML es válido, solo extrae los valores que necesita.
 function parseStats(xmlText) {
-  const xml = new DOMParser().parseFromString(xmlText, 'text/xml');
   const result = {};
   state.canchas.forEach(c => { result[`cancha${c.id}`] = { live:false, viewers:0, bitrate:0, fps:0, codec:'—', uptime:'—' }; });
 
-  xml.querySelectorAll('stream').forEach(s => {
-    const name = s.querySelector('name')?.textContent?.trim();
+  // Separar cada bloque <stream>...</stream> manualmente
+  const streamBlocks = xmlText.split('<stream>').slice(1).map(b => b.split('</stream>')[0]);
+
+  const grab = (block, tag) => {
+    const m = block.match(new RegExp(`<${tag}>([^<]*)</${tag}>`));
+    return m ? m[1].trim() : '';
+  };
+
+  streamBlocks.forEach(block => {
+    const name = grab(block, 'name');
     if (!name || !result[name]) return;
-    const clients = parseInt(s.querySelector('nclients')?.textContent||'0');
-    const bw = parseInt(s.querySelector('bw_video')?.textContent||'0');
-    const codec = s.querySelector('meta video codec')?.textContent||'—';
-    const fps = parseFloat(s.querySelector('meta video frame_rate')?.textContent||'0');
-    const time = parseInt(s.querySelector('time')?.textContent||'0');
+    const clients = parseInt(grab(block, 'nclients') || '0');
+    const bw = parseInt(grab(block, 'bw_video') || '0');
+    const codec = grab(block, 'codec') || '—';
+    const fps = parseFloat(grab(block, 'frame_rate') || '0');
+    const time = parseInt(grab(block, 'time') || '0');
     const m = Math.floor(time/1000/60), sec = Math.floor((time/1000)%60);
     result[name] = { live: clients>0||bw>0, viewers: Math.max(0,clients-1), bitrate: Math.round(bw/1000), fps: Math.round(fps), codec, uptime: time>0?`${m}m ${sec}s`:'—' };
   });
