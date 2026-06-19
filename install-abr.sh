@@ -34,6 +34,12 @@ mkdir -p /tmp/hls_abr/cancha4/{720p,480p,360p}
 chmod -R 777 /tmp/hls_abr
 echo "✅ Carpetas /tmp/hls_abr creadas"
 
+# 4b. Carpeta de logs para bs-abr.sh (www-data necesita poder escribir aquí,
+#     /var/log normal no le da permiso y por eso ffmpeg nunca llegaba a correr)
+mkdir -p /var/log/bs-abr
+chmod 777 /var/log/bs-abr
+echo "✅ /var/log/bs-abr creado con permisos de escritura para www-data"
+
 # 5. Descargar/actualizar index.html y admin.html (Radio Patio TV)
 mkdir -p "$WEBROOT"
 if curl -sL "$BASE_URL/index.html" -o "$WEBROOT/index.html" && curl -sL "$BASE_URL/admin.html" -o "$WEBROOT/admin.html"; then

@@ -23,7 +23,7 @@ case "$1" in
       echo "Uso: bs-utils logs <cancha>   (ej: bs-utils logs cancha1)"
       exit 1
     fi
-    tail -f "/var/log/bs-abr-$2.log"
+    tail -f "/var/log/bs-abr/$2.log"
     ;;
 
   status)
